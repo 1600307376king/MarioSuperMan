@@ -27,6 +27,7 @@ class Level(BaseImg):
         self.position = self.x, self.y
         self.img_rect = img_rect
         self.img = img
+        self.is_show = True
 
 
 class LogoImg(BaseImg):

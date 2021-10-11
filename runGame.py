@@ -17,11 +17,12 @@ from settings import *
 from game_roles.game_text import Text
 from game_config import TEXT_SIZE_1
 from game_config import TEXT_FONT_PATH_1
-from game_config import GAME_LEVEL_BG_IMG_1, GAME_START_LOGO_IMG, COIN_IMG
-from game_config import WHITE_TEXT, TEXT_SIZE_70, TEXT_SIZE_30
+from game_config import GAME_LEVEL_BG_IMG_1, GAME_START_LOGO_IMG
+from game_config import WHITE_TEXT, TEXT_SIZE_70, TEXT_SIZE_30, TEXT_SIZE_100
 from game_config import TEXT_SIZE_60
-from game_config import GAME_LEVEL_REC_1, GAME_START_CENTER_LOGO_REC, GAME_INIT_POS_LOGO_REC
-from game_config import SCALE_MULTIPLE, COIN_SCALE_MULTIPLE
+from game_config import GAME_LEVEL_REC_1, GAME_START_CENTER_LOGO_REC
+from game_config import COIN_IMG, COIN_IMG_REC, SCALE_MULTIPLE_3, SCALE_MULTIPLE_5
+from game_config import GAME_OPTION_ICON, GAME_MUSHROOM_LOGO_REC
 
 
 # START_GAME_BG_PATH = 'resource/img/game_start_bg.png'
@@ -70,15 +71,17 @@ class Game:
     def game_text_init(self):
 
         mouse_pos = Text(0, 0, WHITE_TEXT, text="x = {0}, y = {1}".format(*pygame.mouse.get_pos()))
-        mario_text = Text(100, 50, WHITE_TEXT, text="MARIO", text_size=TEXT_SIZE_70)
-        level_text = Text(1200, 50, WHITE_TEXT, text="WORLD", text_size=TEXT_SIZE_70)
-        time_remaining_text = Text(1600, 50, WHITE_TEXT, text="TIME", text_size=TEXT_SIZE_30)
+        mario_text = Text(100, 50, WHITE_TEXT, text="MARIO", text_size=TEXT_SIZE_60)
+        level_text = Text(1300, 50, WHITE_TEXT, text="WORLD", text_size=TEXT_SIZE_60)
+        time_remaining_text = Text(1700, 50, WHITE_TEXT, text="TIME", text_size=TEXT_SIZE_60)
         score_text = Text(100, 100, WHITE_TEXT, text="0".center(6, '0'), text_size=TEXT_SIZE_60)
-        coin_text = Text(800, 100, WHITE_TEXT, text="0".center(2, '0'), text_size=TEXT_SIZE_60)
+        coin_text = Text(800, 100, WHITE_TEXT, text=" x" + "0".rjust(2, '0'), text_size=TEXT_SIZE_60)
+        game_level_num = Text(1300, 100, WHITE_TEXT, text="0-1".center(6, " "), text_size=TEXT_SIZE_60)
 
         game_option_start = Text(630, 550, WHITE_TEXT, text="Start Game".center(20, ' '), text_size=TEXT_SIZE_60)
         game_option_setting = Text(630, 550 + 80, WHITE_TEXT, "Setting".center(20, ' '), text_size=TEXT_SIZE_60)
         game_option_exit = Text(630, 550 + 160, WHITE_TEXT, "Exit".center(20, ' '), text_size=TEXT_SIZE_60)
+        game_top_score = Text(730, 800, WHITE_TEXT, text='TOP - ' + "0".rjust(6, '0'), text_size=TEXT_SIZE_70)
 
         self.text_display_list.append(mouse_pos)
         self.text_display_list.append(mario_text)
@@ -86,43 +89,57 @@ class Game:
         self.text_display_list.append(time_remaining_text)
         self.text_display_list.append(score_text)
         self.text_display_list.append(coin_text)
+        self.text_display_list.append(game_level_num)
         self.text_display_list.append(game_option_start)
         self.text_display_list.append(game_option_setting)
         self.text_display_list.append(game_option_exit)
+        self.text_display_list.append(game_top_score)
 
     def game_text_draw(self):
         for txt in self.text_display_list:
             if txt.is_show:
                 self.screen.blit(
                     pygame.font.Font(
-                        TEXT_FONT_PATH_1, TEXT_SIZE_30
+                        TEXT_FONT_PATH_1, txt.text_size
                     ).render(txt.text, True, txt.text_color), txt.position)
 
     def game_bg_logo_init(self):
+        # 初始化游戏背景
         level = Level(0, 0, pygame.image.load(GAME_LEVEL_BG_IMG_1), GAME_LEVEL_REC_1)
+        # 初始化游戏开始logo
         game_start_center_logo = LogoImg(700, 250, pygame.image.load(GAME_START_LOGO_IMG),
-                                         scale_tuple(GAME_START_CENTER_LOGO_REC, SCALE_MULTIPLE))
+                                         scale_tuple(GAME_START_CENTER_LOGO_REC, SCALE_MULTIPLE_3))
         game_start_center_logo.img.set_colorkey((255, 0, 220))
         game_start_center_logo.img = \
             pygame.transform.scale(
-                game_start_center_logo.img, (game_start_center_logo.img.get_width() * SCALE_MULTIPLE,
-                                             game_start_center_logo.img.get_height() * SCALE_MULTIPLE))
+                game_start_center_logo.img, (game_start_center_logo.img.get_width() * SCALE_MULTIPLE_3,
+                                             game_start_center_logo.img.get_height() * SCALE_MULTIPLE_3))
 
-        game_coin_logo = LogoImg(800, 100, pygame.image.load(COIN_IMG), GAME_INIT_POS_LOGO_REC)
+        # 初始化顶部金币logo
+        game_coin_logo = LogoImg(800, 100, pygame.image.load(COIN_IMG), scale_tuple(COIN_IMG_REC, SCALE_MULTIPLE_5))
         game_coin_logo.img.set_colorkey((0, 0, 0))
         game_coin_logo.img = pygame.transform.scale(
             game_coin_logo.img,
-            (game_coin_logo.img.get_width() * COIN_SCALE_MULTIPLE,
-             game_coin_logo.img.get_height() * COIN_SCALE_MULTIPLE))
-        game_coin_logo.position = game_coin_logo.x - GAME_INIT_POS_LOGO_REC[2], game_coin_logo.y + 10
+            (game_coin_logo.img.get_width() * SCALE_MULTIPLE_5,
+             game_coin_logo.img.get_height() * SCALE_MULTIPLE_5))
+        game_coin_logo.position = game_coin_logo.x - COIN_IMG_REC[2], game_coin_logo.y + 10
+
+        # 蘑菇头icon
+        mushroom_icon = LogoImg(730, 565, pygame.image.load(GAME_OPTION_ICON),
+                                scale_tuple(GAME_MUSHROOM_LOGO_REC, SCALE_MULTIPLE_3))
+        mushroom_icon.img.set_colorkey((255, 0, 220))
+        mushroom_icon.img = pygame.transform.scale(mushroom_icon.img, (mushroom_icon.img.get_width() * SCALE_MULTIPLE_3,
+                                                   mushroom_icon.img.get_height() * SCALE_MULTIPLE_3))
 
         self.bg_logo_list.append(level)
         self.bg_logo_list.append(game_start_center_logo)
         self.bg_logo_list.append(game_coin_logo)
+        self.bg_logo_list.append(mushroom_icon)
 
     def game_bg_logo_draw(self):
         for img_obj in self.bg_logo_list:
-            self.screen.blit(img_obj.img, img_obj.position, img_obj.img_rect)
+            if img_obj.is_show:
+                self.screen.blit(img_obj.img, img_obj.position, img_obj.img_rect)
 
     def run_game(self):
         # pygame.joystick.init()
