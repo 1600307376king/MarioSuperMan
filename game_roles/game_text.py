@@ -12,20 +12,17 @@ from game_config import SETTING_TEXT
 from game_config import EXIT_TEXT
 from game_config import TEXT_SIZE_1
 from game_config import TEXT_FONT_PATH_1
+from game_roles.base_element import BaseElement
 
 
-class Text:
+class Text(BaseElement):
 
-    def __init__(self, x, y, txt_color, text='', text_size=30):
-        super().__init__()
-        # pygame.font.init()
-        self.x = x
-        self.y = y
-        self.position = self.x, self.y
+    def __init__(self, x, y, txt_color, text='', text_size=30, obj_name=""):
+        super().__init__(x, y, obj_name)
         self.text = text
         self.text_color = txt_color
         self.text_size = text_size
-        self.is_show = True
+
         # self.text_font = pygame.font.Font(text_font_path, text_font_size)
 
     # def get_role(self, screen):
@@ -34,24 +31,23 @@ class Text:
     def update_pos(self, x, y):
         self.x = x
         self.y = y
-        self.position = x, y
 
 
-class DynamicText(Text):
-    # def __init__(self, x, y, text='', text_font_size=text_size, text_type='none'):
-    #     super().__init__(x, y, text, text_font_size=text_font_size)
-    #     pygame.font.init()
-    #     self.text_type = text_type
-
-    # def get_role(self):
-    #     return self.text_front.render(self.display_type[self.text_type], True, (255, 255, 255))
-    def display_mouse_pos(self, screen):
-        """
-        显示当前鼠标坐标
-        :return:
-        """
-        self.text = 'x = {0}, y = {1}'.format(*pygame.mouse.get_pos())
-        # screen.blit(self.text_font.render(self.text, True, (255, 255, 255)), self.position)
+# class DynamicText(Text):
+#     # def __init__(self, x, y, text='', text_font_size=text_size, text_type='none'):
+#     #     super().__init__(x, y, text, text_font_size=text_font_size)
+#     #     pygame.font.init()
+#     #     self.text_type = text_type
+#
+#     # def get_role(self):
+#     #     return self.text_front.render(self.display_type[self.text_type], True, (255, 255, 255))
+#     def display_mouse_pos(self, screen):
+#         """
+#         显示当前鼠标坐标
+#         :return:
+#         """
+#         self.text = 'x = {0}, y = {1}'.format(*pygame.mouse.get_pos())
+#         # screen.blit(self.text_font.render(self.text, True, (255, 255, 255)), self.position)
     #
     # def display_score(self, screen, score=0):
     #     """
@@ -134,8 +130,8 @@ class DynamicText(Text):
     #     screen.blit(point_img, self.position, point_rect)
 
 
-class StaticText(Text):
-    pygame.font.init()
+# class StaticText(Text):
+#     pygame.font.init()
 
     # def display_text_group(self, screen, *group):
     #     for text_obj in group:

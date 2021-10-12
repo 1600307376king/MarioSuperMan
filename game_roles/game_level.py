@@ -5,13 +5,12 @@
 import pygame
 import os
 from game_roles.role_conifg import game_level_dic
+from game_roles.base_element import BaseElement
 
 
-class BaseImg:
-    def __init__(self, x, y, img, img_rect):
-        self.x = x
-        self.y = y
-        self.position = self.x, self.y
+class BaseImg(BaseElement):
+    def __init__(self, x, y, img, img_rect, obj_name=""):
+        super().__init__(x, y, obj_name)
         self.img_rect = img_rect
         self.img = img
 
@@ -20,14 +19,10 @@ class Level(BaseImg):
     """
     游戏关卡
     """
-    def __init__(self, x, y, img, img_rect, level='level-1-1'):
-        super().__init__(x, y, img, img_rect)
-        self.x = x
-        self.y = y
-        self.position = self.x, self.y
-        self.img_rect = img_rect
-        self.img = img
-        self.is_show = True
+    def __init__(self, x, y, img, img_rect, obj_name="", level='level-1-1'):
+
+        super().__init__(x, y, img, img_rect, obj_name)
+        self.level = level
 
 
 class LogoImg(BaseImg):
