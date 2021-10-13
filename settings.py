@@ -4,6 +4,4 @@
 # @Author : jjc
 
 
-GAME_WINDOWS_WIDTH = 1920
-GAME_WINDOWS_HEIGHT = 1080
-GAME_NAME = 'Mario Super Man'
+
