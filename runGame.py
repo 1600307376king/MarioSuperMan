@@ -27,6 +27,12 @@ from game_config import COIN_IMG, COIN_IMG_REC, SCALE_MULTIPLE_3, SCALE_MULTIPLE
 from game_config import GAME_OPTION_ICON, GAME_MUSHROOM_LOGO_REC
 from game_config import GAME_WINDOWS_WIDTH, GAME_WINDOWS_HEIGHT, GAME_NAME
 from game_config import GAME_OPTION_BASE_X, GAME_OPTION_BASE_Y
+from game_config import GAME_LEVEL_TEXT_INIT_POS, MARIO_TITLE_INIT_POS
+from game_config import TIME_REMAINING_TITLE_INIT_POS, GAME_SCORE_TEXT_INIT_POS
+from game_config import GAME_COIN_TEXT_INIT_POS, GAME_LEVEL_NUM_INIT_POS
+from game_config import GAME_OPTION_TEXT_OBJECT_ARR_1, GAME_OPTION_TEXT_OBJECT_ARR_2
+from game_config import GAME_OPTION_TEXT_ARR_1, GAME_OPTION_TEXT_ARR_2
+from game_config import GAME_MUSHROOM_INIT_POS
 
 
 def scale_tuple(tp, multiple):
@@ -51,14 +57,14 @@ class Game:
         self.fps = fps
         self.running = False
         self.clock = pygame.time.Clock()
-        self.counter = 0
         self.option_val = 1
         self.game_progress = 0
-        self.text_display_list = {}
+        # 游戏窗口顶部信息栏对象
+        self.game_info_dict = {}
         # 游戏开始阶段文本对象
         self.game_start_text = {}
         self.game_start_img = {}
-        self.game_option_index = []
+        self.game_option_index = GAME_OPTION_TEXT_OBJECT_ARR_1
 
         self.bg_logo_list = {}
         self.screen = pygame.display.set_mode((self.width, self.height), 0, 32)
@@ -69,43 +75,44 @@ class Game:
         mouse_pos = Text(
             0, 0, WHITE_TEXT, text="x = {0}, y = {1}".format(*pygame.mouse.get_pos()), obj_name="mouse_pos")
         mario_text = Text(
-            100, 50, WHITE_TEXT, text="MARIO", text_size=TEXT_SIZE_60, obj_name="mario_text")
+            *MARIO_TITLE_INIT_POS, WHITE_TEXT,
+            text="MARIO", text_size=TEXT_SIZE_60, obj_name="mario_text")
         level_text = Text(
-            1300, 50, WHITE_TEXT, text="WORLD", text_size=TEXT_SIZE_60, obj_name="level_text")
+            *GAME_LEVEL_TEXT_INIT_POS, WHITE_TEXT,
+            text="WORLD", text_size=TEXT_SIZE_60, obj_name="level_text")
         time_remaining_text = Text(
-            1700, 50, WHITE_TEXT, text="TIME", text_size=TEXT_SIZE_60, obj_name="time_remaining_text")
+            *TIME_REMAINING_TITLE_INIT_POS, WHITE_TEXT,
+            text="TIME", text_size=TEXT_SIZE_60, obj_name="time_remaining_text")
         score_text = Text(
-            100, 100, WHITE_TEXT, text="0".center(6, '0'), text_size=TEXT_SIZE_60, obj_name="score_text")
+            *GAME_SCORE_TEXT_INIT_POS, WHITE_TEXT,
+            text="0".center(6, '0'), text_size=TEXT_SIZE_60, obj_name="score_text")
         coin_text = Text(
-            800, 100, WHITE_TEXT, text=" x" + "0".rjust(2, '0'), text_size=TEXT_SIZE_60, obj_name="coin_text")
+            *GAME_COIN_TEXT_INIT_POS, WHITE_TEXT,
+            text=" x" + "0".rjust(2, '0'), text_size=TEXT_SIZE_60, obj_name="coin_text")
         game_level_num = Text(
-            1300, 100, WHITE_TEXT, text="0-1".center(6, " "), text_size=TEXT_SIZE_60, obj_name="game_level_num")
+            *GAME_LEVEL_NUM_INIT_POS, WHITE_TEXT,
+            text="0-1".center(6, " "), text_size=TEXT_SIZE_60, obj_name="game_level_num")
 
         game_top_score = Text(
             GAME_OPTION_BASE_X, GAME_WINDOWS_HEIGHT - 200, WHITE_TEXT,
             text='TOP - 000000'.center(20, ' '), text_size=TEXT_SIZE_60, obj_name="game_top_score")
 
-        game_option_obj_names = ("game_option_continue", "game_option_restart", "game_option_start",
-                                 "game_option_setting", "game_option_exit")
-        game_option_values = ("Continue", "Restart", "Start Game", "Setting", "Exit")
-        self.game_option_index = list(game_option_obj_names[2:])
-        for i, game_option_obj_name in enumerate(game_option_obj_names):
-
+        for i, game_option_obj_name in enumerate(GAME_OPTION_TEXT_OBJECT_ARR_1):
             self.game_start_text[game_option_obj_name] = Text(
                 GAME_OPTION_BASE_X, GAME_OPTION_BASE_Y + GAME_OPTION_INTERVAL * i, WHITE_TEXT,
-                text=game_option_values[i].center(20, ' '), text_size=TEXT_SIZE_60, obj_name=game_option_obj_name)
+                text=GAME_OPTION_TEXT_ARR_1[i].center(20, ' '), text_size=TEXT_SIZE_60, obj_name=game_option_obj_name)
 
-        self.text_display_list[mouse_pos.obj_name] = mouse_pos
-        self.text_display_list[mario_text.obj_name] = mario_text
-        self.text_display_list[level_text.obj_name] = level_text
-        self.text_display_list[time_remaining_text.obj_name] = time_remaining_text
-        self.text_display_list[score_text.obj_name] = score_text
-        self.text_display_list[coin_text.obj_name] = coin_text
-        self.text_display_list[game_level_num.obj_name] = game_level_num
-        self.text_display_list[game_top_score.obj_name] = game_top_score
+        self.game_info_dict[mouse_pos.obj_name] = mouse_pos
+        self.game_info_dict[mario_text.obj_name] = mario_text
+        self.game_info_dict[level_text.obj_name] = level_text
+        self.game_info_dict[time_remaining_text.obj_name] = time_remaining_text
+        self.game_info_dict[score_text.obj_name] = score_text
+        self.game_info_dict[coin_text.obj_name] = coin_text
+        self.game_info_dict[game_level_num.obj_name] = game_level_num
+        self.game_info_dict[game_top_score.obj_name] = game_top_score
 
     def game_text_draw(self):
-        for txt in self.text_display_list.values():
+        for txt in self.game_info_dict.values():
 
             if txt.is_show:
                 self.screen.blit(
@@ -116,12 +123,11 @@ class Game:
         if self.game_progress == 0:
             for i, option_obj_name in enumerate(self.game_option_index):
                 option_obj = self.game_start_text[option_obj_name]
-                if option_obj.is_show:
-                    option_obj.y = GAME_OPTION_BASE_Y + GAME_OPTION_INTERVAL * i
-                    self.screen.blit(
-                        pygame.font.Font(
-                            TEXT_FONT_PATH_1, option_obj.text_size
-                        ).render(option_obj.text, True, option_obj.text_color), (option_obj.x, option_obj.y))
+                option_obj.y = GAME_OPTION_BASE_Y + GAME_OPTION_INTERVAL * i
+                self.screen.blit(
+                    pygame.font.Font(
+                        TEXT_FONT_PATH_1, option_obj.text_size
+                    ).render(option_obj.text, True, option_obj.text_color), (option_obj.x, option_obj.y))
 
     def game_bg_logo_init(self):
         # 初始化游戏背景
@@ -150,7 +156,8 @@ class Game:
 
         # 蘑菇头icon
         mushroom_icon = LogoImg(
-            730, GAME_OPTION_BASE_Y + 10, pygame.image.load(GAME_OPTION_ICON), scale_tuple(GAME_MUSHROOM_LOGO_REC, SCALE_MULTIPLE_3),
+            *GAME_MUSHROOM_INIT_POS, pygame.image.load(GAME_OPTION_ICON),
+            scale_tuple(GAME_MUSHROOM_LOGO_REC, SCALE_MULTIPLE_3),
             obj_name="mushroom_icon")
         mushroom_icon.img.set_colorkey((255, 0, 220))
         mushroom_icon.img = pygame.transform.scale(mushroom_icon.img, (mushroom_icon.img.get_width() * SCALE_MULTIPLE_3,
@@ -204,23 +211,44 @@ class Game:
                     elif event.key == K_DOWN:
                         self.mushroom_icon_move(1)
                     elif event.key == K_RETURN:
-                        if self.game_progress == 0 and\
+                        # 开始游戏
+                        if self.game_progress == 0 and \
                                 self.game_option_index[self.option_val - 1] == "game_option_start":
                             self.game_progress = 1
-                        elif self.game_progress == 0 and\
+
+                        # 游戏继续
+                        elif self.game_progress == 0 and \
                                 self.game_option_index[self.option_val - 1] == "game_option_continue":
                             self.game_progress = 1
+
+                        elif self.game_progress == 0 and \
+                                self.game_option_index[self.option_val - 1] == "game_option_restart":
+                            self.game_option_index = GAME_OPTION_TEXT_OBJECT_ARR_1
+                            self.game_start_text.clear()
+                            for i, game_option_obj_name in enumerate(GAME_OPTION_TEXT_OBJECT_ARR_1):
+                                self.game_start_text[game_option_obj_name] = Text(
+                                    GAME_OPTION_BASE_X, GAME_OPTION_BASE_Y + GAME_OPTION_INTERVAL * i, WHITE_TEXT,
+                                    text=GAME_OPTION_TEXT_ARR_1[i].center(20, ' '), text_size=TEXT_SIZE_60,
+                                    obj_name=game_option_obj_name)
+
+                            self.game_start_img["mushroom_icon"].y = GAME_MUSHROOM_INIT_POS[1]
+
                         # 选择exit选项时 退出游戏
-                        elif self.game_progress == 0 and\
+                        elif self.game_progress == 0 and \
                                 self.game_option_index[self.option_val - 1] == "game_option_exit":
                             self.running = False
 
                     elif event.key == K_ESCAPE:
                         if self.game_progress == 1:
-                            self.game_option_index.pop(0)
                             self.game_option_index = \
-                                ["game_option_continue", "game_option_restart"] + self.game_option_index
+                                GAME_OPTION_TEXT_OBJECT_ARR_2
                             self.game_progress = 0
+                            self.game_start_text.clear()
+                            for i, game_option_obj_name in enumerate(GAME_OPTION_TEXT_OBJECT_ARR_2):
+                                self.game_start_text[game_option_obj_name] = Text(
+                                    GAME_OPTION_BASE_X, GAME_OPTION_BASE_Y + GAME_OPTION_INTERVAL * i, WHITE_TEXT,
+                                    text=GAME_OPTION_TEXT_ARR_2[i].center(20, ' '), text_size=TEXT_SIZE_60,
+                                    obj_name=game_option_obj_name)
                     # elif event.key == K_SPACE:
                     #     print(1)
                 # elif event.type == pygame.JOYBUTTONUP or event.type == pygame.JOYBUTTONDOWN:
@@ -332,7 +360,6 @@ class Game:
             #         screen.blit(obj.get_role(), obj.position)
 
             pygame.display.update()
-            self.counter += 1
 
 
 if __name__ == '__main__':
