@@ -70,6 +70,9 @@ class Game:
         self.screen = pygame.display.set_mode((self.width, self.height), 0, 32)
         pygame.display.set_caption(self.caption)
 
+        self.joysticks = []
+        self.joysticks1 = None
+
     def game_text_init(self):
 
         mouse_pos = Text(
@@ -191,110 +194,84 @@ class Game:
                 self.game_start_img["mushroom_icon"].y += min(0, direction) * 80
                 self.option_val += min(0, direction)
 
-    def run_game(self):
-        # pygame.joystick.init()
-        # joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
-        # joysticks1 = joysticks[0]
+    def joystick_init(self):
+        pygame.joystick.init()
+        self.joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
+        self.joysticks1 = self.joysticks[0]
 
+    def keyboard_control(self, event):
+        if event.type == QUIT:
+            exit()
+        if event.type == KEYDOWN:
+
+            if event.key == K_UP:
+                self.mushroom_icon_move(-1)
+            elif event.key == K_DOWN:
+                self.mushroom_icon_move(1)
+            elif event.key == K_RETURN:
+                # 开始游戏
+                if self.game_progress == 0 and \
+                        self.game_option_index[self.option_val - 1] == "game_option_start":
+                    self.game_progress = 1
+
+                # 游戏继续
+                elif self.game_progress == 0 and \
+                        self.game_option_index[self.option_val - 1] == "game_option_continue":
+                    self.game_progress = 1
+
+                elif self.game_progress == 0 and \
+                        self.game_option_index[self.option_val - 1] == "game_option_restart":
+                    self.game_option_index = GAME_OPTION_TEXT_OBJECT_ARR_1
+                    self.game_start_text.clear()
+                    for i, game_option_obj_name in enumerate(GAME_OPTION_TEXT_OBJECT_ARR_1):
+                        self.game_start_text[game_option_obj_name] = Text(
+                            GAME_OPTION_BASE_X, GAME_OPTION_BASE_Y + GAME_OPTION_INTERVAL * i, WHITE_TEXT,
+                            text=GAME_OPTION_TEXT_ARR_1[i].center(20, ' '), text_size=TEXT_SIZE_60,
+                            obj_name=game_option_obj_name)
+
+                    self.game_start_img["mushroom_icon"].y = GAME_MUSHROOM_INIT_POS[1]
+
+                # 选择exit选项时 退出游戏
+                elif self.game_progress == 0 and \
+                        self.game_option_index[self.option_val - 1] == "game_option_exit":
+                    self.running = False
+
+            elif event.key == K_ESCAPE:
+                # 暂停游戏
+                if self.game_progress == 1:
+                    self.game_option_index = \
+                        GAME_OPTION_TEXT_OBJECT_ARR_2
+                    self.game_progress = 0
+                    self.game_start_text.clear()
+                    for i, game_option_obj_name in enumerate(GAME_OPTION_TEXT_OBJECT_ARR_2):
+                        self.game_start_text[game_option_obj_name] = Text(
+                            GAME_OPTION_BASE_X, GAME_OPTION_BASE_Y + GAME_OPTION_INTERVAL * i, WHITE_TEXT,
+                            text=GAME_OPTION_TEXT_ARR_2[i].center(20, ' '), text_size=TEXT_SIZE_60,
+                            obj_name=game_option_obj_name)
+
+    def joystick_control(self, event):
+        if event.type == pygame.JOYBUTTONUP or event.type == pygame.JOYBUTTONDOWN:
+            buttons = self.joysticks1.get_numbuttons()
+            for i in range(buttons):
+                button = self.joysticks1.get_button(i)
+                # print("i = {0}, button = {1}".format(i, button))
+                if i == 0 and button == 1:
+                    print("press A")
+                    continue
+            
+                elif i == 1 and button == 1:
+                    print("press B")
+                    continue
+
+    def run_game(self):
         self.running = True
         self.game_bg_logo_init()
         self.game_text_init()
 
         while self.running:
             for event in pygame.event.get():
-                if event.type == QUIT:
-                    exit()
-                if event.type == KEYDOWN:
+                self.keyboard_control(event)
 
-                    if event.key == K_UP:
-                        self.mushroom_icon_move(-1)
-                    elif event.key == K_DOWN:
-                        self.mushroom_icon_move(1)
-                    elif event.key == K_RETURN:
-                        # 开始游戏
-                        if self.game_progress == 0 and \
-                                self.game_option_index[self.option_val - 1] == "game_option_start":
-                            self.game_progress = 1
-
-                        # 游戏继续
-                        elif self.game_progress == 0 and \
-                                self.game_option_index[self.option_val - 1] == "game_option_continue":
-                            self.game_progress = 1
-
-                        elif self.game_progress == 0 and \
-                                self.game_option_index[self.option_val - 1] == "game_option_restart":
-                            self.game_option_index = GAME_OPTION_TEXT_OBJECT_ARR_1
-                            self.game_start_text.clear()
-                            for i, game_option_obj_name in enumerate(GAME_OPTION_TEXT_OBJECT_ARR_1):
-                                self.game_start_text[game_option_obj_name] = Text(
-                                    GAME_OPTION_BASE_X, GAME_OPTION_BASE_Y + GAME_OPTION_INTERVAL * i, WHITE_TEXT,
-                                    text=GAME_OPTION_TEXT_ARR_1[i].center(20, ' '), text_size=TEXT_SIZE_60,
-                                    obj_name=game_option_obj_name)
-
-                            self.game_start_img["mushroom_icon"].y = GAME_MUSHROOM_INIT_POS[1]
-
-                        # 选择exit选项时 退出游戏
-                        elif self.game_progress == 0 and \
-                                self.game_option_index[self.option_val - 1] == "game_option_exit":
-                            self.running = False
-
-                    elif event.key == K_ESCAPE:
-                        if self.game_progress == 1:
-                            self.game_option_index = \
-                                GAME_OPTION_TEXT_OBJECT_ARR_2
-                            self.game_progress = 0
-                            self.game_start_text.clear()
-                            for i, game_option_obj_name in enumerate(GAME_OPTION_TEXT_OBJECT_ARR_2):
-                                self.game_start_text[game_option_obj_name] = Text(
-                                    GAME_OPTION_BASE_X, GAME_OPTION_BASE_Y + GAME_OPTION_INTERVAL * i, WHITE_TEXT,
-                                    text=GAME_OPTION_TEXT_ARR_2[i].center(20, ' '), text_size=TEXT_SIZE_60,
-                                    obj_name=game_option_obj_name)
-                    # elif event.key == K_SPACE:
-                    #     print(1)
-                # elif event.type == pygame.JOYBUTTONUP or event.type == pygame.JOYBUTTONDOWN:
-
-                # buttons = joysticks1.get_numbuttons()
-                #
-                # for i in range(buttons):
-                #     button = joysticks1.get_button(i)
-                #     # print("i = {0}, button = {1}".format(i, button))
-                #     if i == 0 and button == 1:
-                #         print("press A")
-                #         continue
-                #
-                #     elif i == 1 and button == 1:
-                #         print("press B")
-                #         continue
-
-                # elif i == 5 and button == 1:
-                #     print("press right")
-                #
-                # elif i == 5 and button == 1:
-                #     print("press right")
-
-                # elif event.type == pygame.JOYHATMOTION:
-                #     # print(joysticks1.get_name())
-                #     hat_buttons = joysticks1.get_numhats()
-                #     for i in range(hat_buttons):
-                #
-                #         hat = joysticks1.get_hat(i)
-                #         # print("i = {0}, ax = {1}".format(i, hat))
-                #         if hat == (0, 1) and self.option_val > 1:
-                #             print("上")
-                #             self.option_val -= 1
-                #             kwargs['game_option_point'].change_position(
-                #                 kwargs['game_option_point'].x, kwargs['game_option_point'].y - 80)
-                #             # print(kwargs['game_option_point'].position)
-                #         elif hat == (1, 0):
-                #             print("右")
-                #         elif hat == (-1, 0):
-                #             print("左")
-                #         elif hat == (0, -1) and self.option_val < 3:
-                #             print("下")
-                #             self.option_val += 1
-                #             kwargs['game_option_point'].change_position(
-                #                 kwargs['game_option_point'].x, kwargs['game_option_point'].y + 80)
-                # print(kwargs['game_option_point'].position)
 
             # keyboard_key = pygame.key.get_pressed()
             # if keyboard_key[pygame.K_UP]:
@@ -317,39 +294,8 @@ class Game:
             # 绘制游戏文本类
             self.game_text_draw()
 
-            # 游戏背景
-
-            # 鼠标坐标
-
-            # mario text
-
-            # kwargs['level'].get_role(screen)
             # # 显示玩家
-            # kwargs['player'].display_player(screen)
-            # 显示鼠标坐标
 
-            # kwargs['mouse_pos_text'].display_mouse_pos(screen)
-            # # 显示得分、关卡、剩余时间标题
-            # for text_obj in kwargs['static_text_group']:
-            #     text_obj.get_role(screen)
-            #
-            # # 显示当前得分
-            # kwargs['score_text'].display_score(screen)
-            #
-            # # 显示金币数量
-            # kwargs['coin_text'].display_coin_number(screen)
-            #
-            # # 显示当前关卡值
-            # kwargs['game_level_number_text'].display_level_number(screen)
-            #
-            # # 显示游戏logo
-            # kwargs['game_logo_img'].display_logo_img(screen)
-            #
-            # # 显示游戏选项
-            # kwargs['game_option'].display_game_option(screen)
-            #
-            # # 显示游戏最高得分
-            # kwargs['game_top_score'].display_max_score(screen)
             #
             # # 显示游戏选项指示
             # kwargs['game_option_point'].display_option_point(screen)
@@ -392,12 +338,4 @@ if __name__ == '__main__':
     #     'game_option_point': game_option_point
     # }
     game.run_game()
-    # while True:
-    #
-    #
-    #     screen.blit(background, (0, 0))
-    #     screen.blit(start_button_bg, (0, 0))
-    #
-    #     # x, y = pygame.mouse.get_pos()
-    #
-    #     pygame.display.update()
+
