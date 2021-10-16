@@ -7,6 +7,7 @@
 game main
 """
 
+import os
 import pygame
 import math
 from collections import deque
@@ -65,8 +66,12 @@ class Game:
         self.game_start_text = {}
         self.game_start_img = {}
         self.game_option_index = GAME_OPTION_TEXT_OBJECT_ARR_1
-
+        # display_info = pygame.display.Info()
+        # print(display_info.current_w, )
         self.bg_logo_list = {}
+        # 修改窗口初始位置
+        os.environ['SDL_VIDEO_WINDOW_POS'] = "%d, %d" % (0, 30)
+        # 设置窗口大小
         self.screen = pygame.display.set_mode((self.width, self.height), 0, 32)
         pygame.display.set_caption(self.caption)
 

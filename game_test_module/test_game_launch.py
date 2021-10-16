@@ -1,23 +1,24 @@
 import unittest
+import time
+import pyautogui as pg
 from runGame import Game
 from game_config import GAME_WINDOWS_WIDTH, GAME_WINDOWS_HEIGHT, GAME_NAME
-import time
-
-game_copy = None
 
 
 class TestGameLaunch(unittest.TestCase):
 
     def setUp(self):
-        game = Game(GAME_WINDOWS_WIDTH, GAME_WINDOWS_HEIGHT, GAME_NAME)
-        global game_copy
-        game_copy = game
-        game.run_game()
+        pass
 
     def tearDown(self):
         pass
 
     def test_game_launch(self):
-        time.sleep(3)
-        game_copy.running = False
+        x = 1910
+        y = 15
+        print(pg.position())
+        pg.moveTo(x, y)
+        time.sleep(2)
+        pg.click()
+        print(pg.position())
 
