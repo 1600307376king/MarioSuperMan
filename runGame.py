@@ -268,7 +268,8 @@ class Game:
                     print("press B")
                     continue
 
-    def run_game(self):
+    def run_game(self, share_game_data=None):
+
         self.running = True
         self.game_bg_logo_init()
         self.game_text_init()
@@ -309,7 +310,8 @@ class Game:
             #         screen.blit(obj.get_role(), obj.position, obj.img_rect)
             #     else:
             #         screen.blit(obj.get_role(), obj.position)
-
+            if share_game_data:
+                share_game_data['game_info'] = self.game_progress
             pygame.display.update()
 
 
