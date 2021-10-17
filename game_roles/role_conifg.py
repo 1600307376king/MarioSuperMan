@@ -25,8 +25,6 @@ game_level_dic = {
     'level-1-1': {'img_path': game_level_path, 'position': (0, 0, 1920, 1080)}
 }
 
-
-
 # 获取金币图片
 coin_img_path = 'resource/img/text_images.png'
 coin_img_load_dic = {

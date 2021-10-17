@@ -4,28 +4,15 @@
 # @Author : jjc
 import pygame
 from game_roles.role_conifg import player_img_load_dic, SCALE_MULTIPLE
+from game_roles.base_element import BaseElement
 
 
-class Mario(object):
-    def __init__(self, x, y, state='normal'):
-        self.x = x
-        self.y = y
-
-        self.img_rect = player_img_load_dic[state]['position']
-        _, _, self.width, self.height = self.img_rect
-        self.img = pygame.image.load(player_img_load_dic[state]['img_path'])
-        self.img = pygame.transform.scale(self.img, (self.img.get_rect().width * SCALE_MULTIPLE,
-                                                     self.img.get_rect().height * SCALE_MULTIPLE))
-        self.position = self.x + self.width / 2, self.y - self.height
+class Mario(BaseElement):
+    def __init__(self, x, y, img, img_rect, obj_name=""):
+        super().__init__(x, y, obj_name)
+        self.image = img
+        self.rect = self.image.get_rect()
         self.game_score = 0
-
-    def get_role(self):
-
-        return self.img
-
-    def display_player(self, screen):
-        screen.blit(self.img, self.position, self.img_rect)
-        # return self.img
 
     def run(self):
         pass

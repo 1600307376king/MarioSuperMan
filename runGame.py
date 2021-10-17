@@ -8,12 +8,13 @@ game main
 """
 
 import os
-import pygame
-from game_roles.game_level import Level, LogoImg
-from pygame.locals import QUIT, KEYDOWN, K_UP, K_DOWN
-from pygame.locals import K_RETURN, K_ESCAPE
 from sys import exit
+import pygame
+from pygame.locals import QUIT, KEYDOWN, K_UP, K_DOWN, K_RIGHT, K_LEFT
+from pygame.locals import K_RETURN, K_ESCAPE
 from game_roles.game_text import Text
+from game_roles.game_level import Level, LogoImg
+from game_roles.mario import Mario
 from game_config import TEXT_FONT_PATH_1
 from game_config import GAME_LEVEL_BG_IMG_1, GAME_START_LOGO_IMG
 from game_config import WHITE_TEXT
@@ -29,11 +30,31 @@ from game_config import GAME_COIN_TEXT_INIT_POS, GAME_LEVEL_NUM_INIT_POS
 from game_config import GAME_OPTION_TEXT_OBJECT_ARR_1, GAME_OPTION_TEXT_OBJECT_ARR_2
 from game_config import GAME_OPTION_TEXT_ARR_1, GAME_OPTION_TEXT_ARR_2
 from game_config import GAME_MUSHROOM_INIT_POS
+from game_config import MARIO_INIT_POS_1, MARIO_BASE_IMG
+from game_config import MARIO_INIT_REC_1
 
 
 def scale_tuple(tp, multiple):
     temp_tuple = [i * multiple for i in tp]
     return tuple(temp_tuple)
+
+
+def rect_scale(rec, tp, multiple):
+    # rec.x *= multiple
+    # rec.y *= multiple
+    # rec.w *= multiple
+    # rec.h *= multiple
+    rec.x, rec.y, rec.w, rec.h = [i * multiple for i in tp]
+    return rec
+
+
+class Block(pygame.sprite.Sprite):
+    def __init__(self, color, width, height):
+        super().__init__()
+
+        self.image = pygame.Surface([width, height])
+        self.image.fill(color)
+        self.rect = self.image.get_rect()
 
 
 class Game:
@@ -64,19 +85,44 @@ class Game:
         # display_info = pygame.display.Info()
         # print(display_info.current_w, )
         self.bg_logo_list = {}
+
+        self.person = {}
         # 修改窗口初始位置
         os.environ['SDL_VIDEO_WINDOW_POS'] = "%d, %d" % (0, 30)
         # 设置窗口大小
         self.screen = pygame.display.set_mode((self.width, self.height), 0, 32)
         pygame.display.set_caption(self.caption)
+        self.sprite_list = pygame.sprite.Group()
 
         self.joysticks = []
         self.joysticks1 = None
 
+    def mario_init(self):
+        mario = Mario(
+            *MARIO_INIT_POS_1,
+            pygame.image.load(MARIO_BASE_IMG), scale_tuple(MARIO_INIT_REC_1, SCALE_MULTIPLE_3),
+            obj_name="mario")
+        mario.image = pygame.transform.scale(
+            mario.image, (mario.image.get_rect().width * SCALE_MULTIPLE_3,
+                          mario.image.get_rect().height * SCALE_MULTIPLE_3))
+        # mario.rect = mario.img_rect
+        mario.rect = rect_scale(mario.rect, MARIO_INIT_REC_1, SCALE_MULTIPLE_3)
+        self.person[mario.obj_name] = mario
+
+
+
+        # self.sprite_list.add(block)
+        # self.sprite_list.add(mario)
+
+    def draw_all_person(self):
+        for person in self.person.values():
+            self.screen.blit(person.image, (person.x, person.y), person.rect)
+
     def game_text_init(self):
 
         mouse_pos = Text(
-            0, 0, WHITE_TEXT, text="x = {0}, y = {1}".format(*pygame.mouse.get_pos()), obj_name="mouse_pos")
+            0, 0, WHITE_TEXT,
+            text="x = {0}, y = {1}".format(*pygame.mouse.get_pos()), obj_name="mouse_pos")
         mario_text = Text(
             *MARIO_TITLE_INIT_POS, WHITE_TEXT,
             text="MARIO", text_size=TEXT_SIZE_60, obj_name="mario_text")
@@ -103,7 +149,8 @@ class Game:
         for i, game_option_obj_name in enumerate(GAME_OPTION_TEXT_OBJECT_ARR_1):
             self.game_start_text[game_option_obj_name] = Text(
                 GAME_OPTION_BASE_X, GAME_OPTION_BASE_Y + GAME_OPTION_INTERVAL * i, WHITE_TEXT,
-                text=GAME_OPTION_TEXT_ARR_1[i].center(20, ' '), text_size=TEXT_SIZE_60, obj_name=game_option_obj_name)
+                text=GAME_OPTION_TEXT_ARR_1[i].center(20, ' '),
+                text_size=TEXT_SIZE_60, obj_name=game_option_obj_name)
 
         self.game_info_dict[mouse_pos.obj_name] = mouse_pos
         self.game_info_dict[mario_text.obj_name] = mario_text
@@ -266,26 +313,47 @@ class Game:
                 button = self.joysticks1.get_button(i)
                 if i == 0 and button == 1:
                     print("press A")
-                    continue
-            
+
                 elif i == 1 and button == 1:
                     print("press B")
-                    continue
 
     def run_game(self, share_game_data=None):
-
+        """
+        launch game
+        :param share_game_data: test module var
+        :return:
+        """
         self.running = True
+        self.mario_init()
         self.game_bg_logo_init()
         self.game_text_init()
 
+        # rect_color = (0, 0, 255)
+        # rect_x = 300
+        # rect_y = 957
+        # rect_width = 50
+        # rect_pos = (rect_x, rect_y, rect_width, rect_width)
+        # rect_pos_2 = (50, rect_y, rect_width, rect_width)
+        block = Block((0, 0, 255), 50, 50)
+        block.rect.x = 240
+        block.rect.y = 957
+
+        block2 = Block((0, 0, 255), 50, 50)
+        block2.rect.x = 230
+        block2.rect.y = 957
+        # self.sprite_list.add(block)
+        self.sprite_list.add(self.person["mario"])
+        self.sprite_list.add(block2)
         while self.running:
             for event in pygame.event.get():
                 self.keyboard_control(event)
 
-            # keyboard_key = pygame.key.get_pressed()
-            # if keyboard_key[pygame.K_UP]:
-            #
-            #
+            keyboard_key = pygame.key.get_pressed()
+            if keyboard_key[pygame.K_RIGHT]:
+                self.person["mario"].x += 2
+                if pygame.sprite.collide_rect_ratio(0.9)(self.person["mario"], block):
+                    print(1)
+
             # elif keyboard_key[pygame.K_DOWN]:
             #     self.mushroom_icon_move(1)
             # keyboard_key = pygame.key.get_pressed()
@@ -302,7 +370,12 @@ class Game:
             self.game_bg_logo_draw()
             # 绘制游戏文本类
             self.game_text_draw()
+            # 绘制所以游戏人物
+            # self.draw_all_person()
 
+            # pygame.draw.rect(self.screen, rect_color, rect_pos, width=0)
+            # pygame.draw.rect(self.screen, rect_color, rect_pos_2, width=0)
+            self.sprite_list.draw(self.screen)
             if share_game_data:
                 share_game_data["game_info"] = self.game_progress
                 share_game_data["game_top_score"] = self.game_info_dict["game_top_score"].is_show

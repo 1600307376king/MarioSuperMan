@@ -45,6 +45,12 @@ GAME_OPTION_ICON = 'resource/img/title_screen.png'
 GAME_MUSHROOM_LOGO_REC = (0, 153, 11, 11)
 GAME_MUSHROOM_INIT_POS = (730, GAME_OPTION_BASE_Y + 10)
 
+# mario
+MARIO_BASE_IMG = "resource/img/mario_bros.png"
+MARIO_INIT_REC_1 = (178, 32, 12, 16)
+MARIO_INIT_REC_2 = (178, 24, 16, 20)
+MARIO_INIT_POS_1 = (150, 957)
+
 # 字体颜色
 WHITE_TEXT = (255, 255, 255)
 
