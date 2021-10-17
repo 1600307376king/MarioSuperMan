@@ -9,19 +9,14 @@ game main
 
 import os
 import pygame
-import math
-from collections import deque
 from game_roles.game_level import Level, LogoImg
-from game_roles.mario import Mario
-from pygame.locals import QUIT, KEYUP, KEYDOWN, K_LEFT, K_UP, K_DOWN
-from pygame.locals import K_KP_ENTER, K_SPACE, K_RETURN, K_ESCAPE
+from pygame.locals import QUIT, KEYDOWN, K_UP, K_DOWN
+from pygame.locals import K_RETURN, K_ESCAPE
 from sys import exit
-
 from game_roles.game_text import Text
-from game_config import TEXT_SIZE_1
 from game_config import TEXT_FONT_PATH_1
 from game_config import GAME_LEVEL_BG_IMG_1, GAME_START_LOGO_IMG
-from game_config import WHITE_TEXT, TEXT_SIZE_70, TEXT_SIZE_30, TEXT_SIZE_100
+from game_config import WHITE_TEXT
 from game_config import TEXT_SIZE_60, GAME_OPTION_INTERVAL
 from game_config import GAME_LEVEL_REC_1, GAME_START_CENTER_LOGO_REC
 from game_config import COIN_IMG, COIN_IMG_REC, SCALE_MULTIPLE_3, SCALE_MULTIPLE_5
@@ -218,11 +213,15 @@ class Game:
                 if self.game_progress == 0 and \
                         self.game_option_index[self.option_val - 1] == "game_option_start":
                     self.game_progress = 1
+                    self.option_val = 1
+                    self.game_info_dict["game_top_score"].is_show = False
 
                 # 游戏继续
                 elif self.game_progress == 0 and \
                         self.game_option_index[self.option_val - 1] == "game_option_continue":
                     self.game_progress = 1
+                    self.option_val = 1
+                    self.game_info_dict["game_top_score"].is_show = False
 
                 elif self.game_progress == 0 and \
                         self.game_option_index[self.option_val - 1] == "game_option_restart":
@@ -235,6 +234,9 @@ class Game:
                             obj_name=game_option_obj_name)
 
                     self.game_start_img["mushroom_icon"].y = GAME_MUSHROOM_INIT_POS[1]
+                    self.game_progress = 0
+                    self.option_val = 1
+                    self.game_info_dict["game_top_score"].is_show = True
 
                 # 选择exit选项时 退出游戏
                 elif self.game_progress == 0 and \
@@ -246,20 +248,22 @@ class Game:
                 if self.game_progress == 1:
                     self.game_option_index = \
                         GAME_OPTION_TEXT_OBJECT_ARR_2
-                    self.game_progress = 0
+
                     self.game_start_text.clear()
                     for i, game_option_obj_name in enumerate(GAME_OPTION_TEXT_OBJECT_ARR_2):
                         self.game_start_text[game_option_obj_name] = Text(
                             GAME_OPTION_BASE_X, GAME_OPTION_BASE_Y + GAME_OPTION_INTERVAL * i, WHITE_TEXT,
                             text=GAME_OPTION_TEXT_ARR_2[i].center(20, ' '), text_size=TEXT_SIZE_60,
                             obj_name=game_option_obj_name)
+                    self.game_progress = 0
+                    self.option_val = 1
+                    self.game_info_dict["game_top_score"].is_show = True
 
     def joystick_control(self, event):
         if event.type == pygame.JOYBUTTONUP or event.type == pygame.JOYBUTTONDOWN:
             buttons = self.joysticks1.get_numbuttons()
             for i in range(buttons):
                 button = self.joysticks1.get_button(i)
-                # print("i = {0}, button = {1}".format(i, button))
                 if i == 0 and button == 1:
                     print("press A")
                     continue
@@ -277,7 +281,6 @@ class Game:
         while self.running:
             for event in pygame.event.get():
                 self.keyboard_control(event)
-
 
             # keyboard_key = pygame.key.get_pressed()
             # if keyboard_key[pygame.K_UP]:
@@ -300,49 +303,15 @@ class Game:
             # 绘制游戏文本类
             self.game_text_draw()
 
-            # # 显示玩家
-
-            #
-            # # 显示游戏选项指示
-            # kwargs['game_option_point'].display_option_point(screen)
-            # for obj in game_obj:
-            #     if hasattr(obj, 'img_rect'):
-            #         screen.blit(obj.get_role(), obj.position, obj.img_rect)
-            #     else:
-            #         screen.blit(obj.get_role(), obj.position)
             if share_game_data:
-                share_game_data['game_info'] = self.game_progress
+                share_game_data["game_info"] = self.game_progress
+                share_game_data["game_top_score"] = self.game_info_dict["game_top_score"].is_show
+
             pygame.display.update()
 
 
 if __name__ == '__main__':
     game = Game(GAME_WINDOWS_WIDTH, GAME_WINDOWS_HEIGHT, GAME_NAME)
-    # level = Level(0, 0)
-    # mario = Mario(150, 1005)
-    # mouse_pos_text = DynamicText(0, 0, text_font_size=20)
-    # score_title_text = StaticText(100, 50, 'MARIO', 70)
-    # level_title_text = StaticText(1200, 50, 'WORLD', 70)
-    # time_remaining_text = StaticText(1600, 50, 'TIME', 70)
-    # score_text = DynamicText(100, 100, text_font_size=60)
-    # coin_text = DynamicText(800, 100, text_font_size=60)
-    # game_level_number_text = DynamicText(1250, 100, text_font_size=60)
-    # game_logo_img = DynamicText(700, 250)
-    # game_option = DynamicText(630, 550, text_font_size=60)
-    # game_top_score = DynamicText(730, 800, text_font_size=70)
-    # game_option_point = DynamicText(730, 565)
-    # static_text_list = (score_title_text, level_title_text, time_remaining_text)
-    # role_dic = {
-    #     'level': level,
-    #     'player': mario,
-    #     'mouse_pos_text': mouse_pos_text,
-    #     'score_text': score_text,
-    #     'static_text_group': static_text_list,
-    #     'coin_text': coin_text,
-    #     'game_level_number_text': game_level_number_text,
-    #     'game_logo_img': game_logo_img,
-    #     'game_option': game_option,
-    #     'game_top_score': game_top_score,
-    #     'game_option_point': game_option_point
-    # }
-    game.run_game()
 
+    # mario = Mario(150, 1005)
+    game.run_game()
