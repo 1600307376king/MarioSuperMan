@@ -100,17 +100,16 @@ class Game:
     def mario_init(self):
         mario = Mario(
             *MARIO_INIT_POS_1,
-            pygame.image.load(MARIO_BASE_IMG), scale_tuple(MARIO_INIT_REC_1, SCALE_MULTIPLE_3),
+            pygame.image.load(MARIO_BASE_IMG),
             obj_name="mario")
-        mario.image = pygame.transform.scale(
-            mario.image, (mario.image.get_rect().width * SCALE_MULTIPLE_3,
-                          mario.image.get_rect().height * SCALE_MULTIPLE_3))
+        # mario.image = pygame.transform.scale(
+        #     mario.image, (mario.image.get_rect().width * SCALE_MULTIPLE_3,
+        #                   mario.image.get_rect().height * SCALE_MULTIPLE_3))
         # mario.rect = mario.img_rect
-        mario.rect = rect_scale(mario.rect, MARIO_INIT_REC_1, SCALE_MULTIPLE_3)
+        # mario.rect = mario.image.get_rect()
+        # mario.rect = rect_scale(mario.rect, MARIO_INIT_REC_1, SCALE_MULTIPLE_3)
+        mario.rect.x, mario.rect.y = (150, 957)
         self.person[mario.obj_name] = mario
-
-
-
         # self.sprite_list.add(block)
         # self.sprite_list.add(mario)
 
@@ -350,7 +349,9 @@ class Game:
 
             keyboard_key = pygame.key.get_pressed()
             if keyboard_key[pygame.K_RIGHT]:
-                self.person["mario"].x += 2
+                # self.person["mario"].x += 2
+                self.person["mario"].update()
+                # print(2)
                 if pygame.sprite.collide_rect_ratio(0.9)(self.person["mario"], block):
                     print(1)
 
