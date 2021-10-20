@@ -357,10 +357,10 @@ class Game:
             keyboard_key = pygame.key.get_pressed()
             self.person["mario"].decelerate()
             if pygame.sprite.collide_mask(self.person["mario"], ground):
-                print(self.person["mario"].initial_velocity.y)
+                # print(self.person["mario"].initial_velocity.y)
                 if self.person["mario"].initial_velocity.y != 0:
 
-                    self.person["mario"].initial_velocity.y = 0
+                    self.person["mario"].init_vertical_state()
             if keyboard_key[pygame.K_RIGHT]:
                 # print(1)
                 # print(self.person["mario"].initial_velocity)
@@ -376,6 +376,7 @@ class Game:
                 #     print(1)
             if keyboard_key[pygame.K_SPACE]:
                 self.person["mario"].jump()
+            print(self.person["mario"].initial_velocity)
 
             self.person["mario"].update()
 

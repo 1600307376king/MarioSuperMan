@@ -45,6 +45,10 @@ class Mario(BaseElement):
     def init_accelerated(self):
         self.accelerated.x, _ = 0, 0
 
+    def init_vertical_state(self):
+        self.accelerated.y = 0
+        self.initial_velocity.y = 0
+
     def decelerate(self):
         if self.initial_velocity.x > 0 and self.initial_velocity.y == 0:
             self.accelerated.x = 1
