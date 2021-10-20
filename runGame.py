@@ -11,6 +11,7 @@ import os
 from sys import exit
 import pygame
 from pygame.locals import QUIT, KEYDOWN, K_UP, K_DOWN, K_RIGHT, K_LEFT
+from pygame.locals import K_SPACE
 from pygame.locals import K_RETURN, K_ESCAPE
 from game_roles.game_text import Text
 from game_roles.game_level import Level, LogoImg
@@ -108,7 +109,7 @@ class Game:
         # mario.rect = mario.img_rect
         # mario.rect = mario.image.get_rect()
         # mario.rect = rect_scale(mario.rect, MARIO_INIT_REC_1, SCALE_MULTIPLE_3)
-        mario.rect.x, mario.rect.y = (150, 957)
+        mario.rect.x, mario.rect.y = MARIO_INIT_POS_1
         self.person[mario.obj_name] = mario
         # self.sprite_list.add(block)
         # self.sprite_list.add(mario)
@@ -340,30 +341,43 @@ class Game:
         block2 = Block((0, 0, 255), 50, 50)
         block2.rect.x = 230
         block2.rect.y = 957
-        # self.sprite_list.add(block)
+
+        ground = Block((0, 0, 255), 1920, 95)
+        ground.rect.x, ground.rect.y = 0, 1005
+        self.sprite_list.add(ground)
         self.sprite_list.add(self.person["mario"])
         self.sprite_list.add(block2)
         while self.running:
+
+            self.person["mario"].init_accelerated()
+
             for event in pygame.event.get():
                 self.keyboard_control(event)
 
             keyboard_key = pygame.key.get_pressed()
-            if keyboard_key[pygame.K_RIGHT]:
-                # self.person["mario"].x += 2
-                self.person["mario"].update()
-                # print(2)
-                if pygame.sprite.collide_rect_ratio(0.9)(self.person["mario"], block):
-                    print(1)
+            self.person["mario"].decelerate()
+            if pygame.sprite.collide_mask(self.person["mario"], ground):
+                print(self.person["mario"].initial_velocity.y)
+                if self.person["mario"].initial_velocity.y != 0:
 
-            # elif keyboard_key[pygame.K_DOWN]:
-            #     self.mushroom_icon_move(1)
-            # keyboard_key = pygame.key.get_pressed()
-            # if keyboard_key[pygame.K_UP] and self.option_val > 0:
-            #     self.option_val -= 1
-            #     print(self.option_val)
-            # elif keyboard_key[pygame.K_DOWN] and self.option_val < 3:
-            #     self.option_val += 1
-            #     print(self.option_val)
+                    self.person["mario"].initial_velocity.y = 0
+            if keyboard_key[pygame.K_RIGHT]:
+                # print(1)
+                # print(self.person["mario"].initial_velocity)
+                self.person["mario"].right_move()
+                # if pygame.sprite.collide_rect_ratio(0.9)(self.person["mario"], block):
+                #     print(1)
+
+            if keyboard_key[pygame.K_LEFT]:
+                # print(self.person["mario"].initial_velocity)
+                # print(2)
+                self.person["mario"].left_move()
+                # if pygame.sprite.collide_rect_ratio(0.9)(self.person["mario"], block):
+                #     print(1)
+            if keyboard_key[pygame.K_SPACE]:
+                self.person["mario"].jump()
+
+            self.person["mario"].update()
 
             self.clock.tick(self.fps)
 
