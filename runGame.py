@@ -345,6 +345,7 @@ class Game:
         self.game_bg_logo_init()
         self.game_text_init()
 
+
         block_1_left = Block((0, 255, 0), 1, 50, 500, 957)
         block_1_right = Block((0, 0, 255), 1, 50, 550, 957)
         block_1_top = Block((255, 0, 255), 50, 1, 500, 957)
@@ -355,9 +356,9 @@ class Game:
 
         block2 = Block((0, 0, 255), 1, 50, 500, 957)
 
-        block3 = Block((0, 0, 255), 50, 50, 500, 957)
+        block3 = Block((255, 0, 255), 50, 50, 500, 957)
 
-        block4 = Block((0, 0, 255), 50, 50, 800, 957)
+        block4 = Block((0, 255, 255), 50, 50, 800, 957)
 
         ground = Block((0, 0, 255), 1920, 60, 0, 1005)
 
@@ -373,9 +374,8 @@ class Game:
         self.right_surface_group.add(block3)
         self.right_surface_group.add(block4)
 
-        self.top_surface_group.add()
-        # self.left_surface_group.add(block3)
-        # self.left_surface_group.add(block4)
+        # self.top_surface_group.add()
+
 
         # block_group = pygame.sprite.Group()
         # block_group.add(block_1_top)
@@ -426,13 +426,13 @@ class Game:
 
                 self.game_mario.try_to_speed_cut()
 
-            if keyboard_key[pygame.K_LEFT]:
-                if self.game_mario.is_right_move():
-                    self.game_mario.try_to_speed_cut()
-
-            if keyboard_key[pygame.K_RIGHT]:
-                if self.game_mario.is_left_move():
-                    self.game_mario.try_to_speed_cut()
+            # if keyboard_key[pygame.K_LEFT]:
+            #     if self.game_mario.is_right_move():
+            #         self.game_mario.try_to_speed_cut()
+            #
+            # if keyboard_key[pygame.K_RIGHT]:
+            #     if self.game_mario.is_left_move():
+            #         self.game_mario.try_to_speed_cut()
 
             if self.game_mario.ban_on_right:
                 if keyboard_key[pygame.K_RIGHT]:
@@ -444,7 +444,6 @@ class Game:
 
             for event in pygame.event.get():
                 self.keyboard_control(event)
-
 
             # print(self.game_mario.instantaneous_velocity.y)
             # 根据当前状态保持水平方向运动或静止

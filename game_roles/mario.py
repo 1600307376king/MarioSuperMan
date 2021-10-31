@@ -3,6 +3,7 @@
 # @Time : 2021/2/4 19:18
 # @Author : jjc
 import pygame
+import time
 from game_roles.role_conifg import player_img_load_dic, SCALE_MULTIPLE
 from game_roles.base_element import BaseElement
 from game_roles.state_mode import StateMode
@@ -127,6 +128,7 @@ class Mario(BaseElement):
     def left_move(self):
         self.slow_down_decelerate = 1
         self.accelerated.x = -self.accelerated_x
+        # self.instantaneous_velocity.x = -2
         self.instantaneous_velocity += self.accelerated
         if self.instantaneous_velocity.x >= 0:
             self.instantaneous_velocity.x = min(self.instantaneous_velocity.x, MAX_VERTICAL_VELOCITY)
@@ -182,10 +184,16 @@ class Mario(BaseElement):
 
     def towards_the_static(self):
         self.mario_state.state = "static"
+        self.instantaneous_velocity.x = 0
+
+    def is_towards_the_left(self):
+        return self.mario_state.state in ("left_decelerate", "left_move")
+
+    def is_towards_the_right(self):
+        return self.mario_state.state in ("right_decelerate", "right_move")
 
     def update(self, bearing_surface_collision, left_surface_collision, right_surface_collision):
 
-        # print(self.instantaneous_velocity)
         for block in bearing_surface_collision:
             # 避免下降过头，超过支撑面
             if self.instantaneous_velocity.y >= block.rect.top - self.rect.bottom and \
@@ -193,21 +201,32 @@ class Mario(BaseElement):
                 self.rect.y += block.rect.top - self.rect.bottom
                 # 检测是否碰撞
                 if self.is_y_axis_down_collide(bearing_surface_collision):
-                    self.ban_on_left = False
                     self.towards_the_vertical_static()
                     break
 
                 self.towards_the_fall()
 
-        for block in left_surface_collision:
-            # 避免mario向左移动发生碰撞时移动过头
-            print(self.rect.left, block.rect.right, self.instantaneous_velocity.x)
-            if self.instantaneous_velocity.x >= self.rect.left - block.rect.right and \
-                    block.rect.right <= self.rect.left:
-                if self.is_x_axis_down_collide(left_surface_collision):
-                    self.towards_the_static()
-                    break
-            pass
+        if self.is_towards_the_left():
+            for block in left_surface_collision:
+                # 避免mario向左移动发生碰撞时移动过头
+
+                if abs(self.instantaneous_velocity.x) >= self.rect.left - block.rect.right and \
+                        block.rect.right <= self.rect.left:
+                    self.rect.x += -(self.rect.left - block.rect.right)
+                    if self.is_x_axis_left_collide(left_surface_collision):
+                        self.ban_on_left = False
+                        self.towards_the_static()
+                        break
+
+        if self.is_towards_the_right():
+            for block in right_surface_collision:
+                if self.instantaneous_velocity.x >= block.rect.left - self.rect.right and \
+                        block.rect.left >= self.rect.right:
+                    self.rect.x += block.rect.left - self.rect.right
+                    if self.is_x_axis_right_collide(left_surface_collision):
+                        self.ban_on_right = True
+                        self.towards_the_static()
+                        break
 
         if self.mario_state.vertical_state == "vertical_static":
             self.instantaneous_velocity.y = 0
@@ -215,6 +234,7 @@ class Mario(BaseElement):
 
         self.rect.x += self.instantaneous_velocity.x
         self.rect.y += self.instantaneous_velocity.y
+
         # self.left_surface.rect.x, self.left_surface.rect.y = self.rect.x, self.rect.y
         # self.right_surface.rect.x, self.right_surface.rect.y = self.rect.right, self.rect.y
         # self.bottom_surface.rect.x, self.bottom_surface.rect.y = self.rect.x, self.rect.bottom
