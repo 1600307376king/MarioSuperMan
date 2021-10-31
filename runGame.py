@@ -16,6 +16,7 @@ from pygame.locals import K_RETURN, K_ESCAPE
 from game_roles.game_text import Text
 from game_roles.game_level import Level, LogoImg
 from game_roles.mario import Mario
+from game_roles.block_surface import Block, BlockSurface
 from game_config import TEXT_FONT_PATH_1
 from game_config import GAME_LEVEL_BG_IMG_1, GAME_START_LOGO_IMG
 from game_config import WHITE_TEXT
@@ -47,15 +48,6 @@ def rect_scale(rec, tp, multiple):
     # rec.h *= multiple
     rec.x, rec.y, rec.w, rec.h = [i * multiple for i in tp]
     return rec
-
-
-class Block(pygame.sprite.Sprite):
-    def __init__(self, color, width, height):
-        super().__init__()
-
-        self.image = pygame.Surface([width, height])
-        self.image.fill(color)
-        self.rect = self.image.get_rect()
 
 
 class Game:
@@ -93,7 +85,11 @@ class Game:
         # 设置窗口大小
         self.screen = pygame.display.set_mode((self.width, self.height), 0, 32)
         pygame.display.set_caption(self.caption)
-        self.sprite_list = pygame.sprite.Group()
+        self.bearing_surface_group = pygame.sprite.Group()
+        self.left_surface_group = pygame.sprite.Group()
+        self.right_surface_group = pygame.sprite.Group()
+        self.top_surface_group = pygame.sprite.Group()
+        self.display_group = pygame.sprite.Group()
 
         self.joysticks = []
         self.joysticks1 = None
@@ -110,11 +106,11 @@ class Game:
         # mario.rect = mario.img_rect
         # mario.rect = mario.image.get_rect()
         # mario.rect = rect_scale(mario.rect, MARIO_INIT_REC_1, SCALE_MULTIPLE_3)
-        mario.rect.x, mario.rect.y = MARIO_INIT_POS_1
+
         self.person[mario.obj_name] = mario
         self.game_mario = self.person["mario"]
-        # self.sprite_list.add(block)
-        # self.sprite_list.add(mario)
+        # self.bearing_surface_group.add(block)
+        # self.bearing_surface_group.add(mario)
 
     def draw_all_person(self):
         for person in self.person.values():
@@ -263,12 +259,7 @@ class Game:
         if event.type == KEYUP:
             self.game_mario.slow_down_decelerate = 4
             # print(self.game_mario.mario_state.state)
-            if self.game_mario.mario_state.state == "left_move":
-                self.game_mario.towards_the_left_decelerate()
-
-            elif self.game_mario.mario_state.state == "right_move":
-                # print(2)
-                self.game_mario.towards_the_right_decelerate()
+            self.game_mario.try_to_speed_cut()
 
         if event.type == KEYDOWN:
 
@@ -329,7 +320,7 @@ class Game:
 
             elif event.key == K_SPACE:
 
-                if self.game_mario.initial_velocity.y == 0:
+                if self.game_mario.instantaneous_velocity.y == 0:
                     self.game_mario.towards_the_rise()
 
     def joystick_control(self, event):
@@ -354,47 +345,115 @@ class Game:
         self.game_bg_logo_init()
         self.game_text_init()
 
-        block = Block((0, 0, 255), 50, 50)
-        block.rect.x = 240
-        block.rect.y = 957
+        block_1_left = Block((0, 255, 0), 1, 50, 500, 957)
+        block_1_right = Block((0, 0, 255), 1, 50, 550, 957)
+        block_1_top = Block((255, 0, 255), 50, 1, 500, 957)
 
-        block2 = Block((0, 0, 255), 50, 50)
-        block2.rect.x = 230
-        block2.rect.y = 957
+        block_2_left = Block((0, 255, 0), 1, 50, 800, 957)
+        block_2_right = Block((0, 0, 255), 1, 50, 850, 957)
+        block_2_top = Block((255, 0, 255), 50, 1, 800, 957)
 
-        ground = Block((0, 0, 255), 1920, 95)
-        ground.rect.x, ground.rect.y = 0, 1005
-        self.sprite_list.add(ground)
-        self.sprite_list.add(self.game_mario)
-        self.sprite_list.add(block2)
+        block2 = Block((0, 0, 255), 1, 50, 500, 957)
+
+        block3 = Block((0, 0, 255), 50, 50, 500, 957)
+
+        block4 = Block((0, 0, 255), 50, 50, 800, 957)
+
+        ground = Block((0, 0, 255), 1920, 60, 0, 1005)
+
+        self.bearing_surface_group.add(ground)
+        self.bearing_surface_group.add(block3)
+        self.bearing_surface_group.add(block4)
+
+        # self.left_surface_group.add(self.game_mario)
+        # self.left_surface_group.add(ground)
+        self.left_surface_group.add(block3)
+        self.left_surface_group.add(block4)
+
+        self.right_surface_group.add(block3)
+        self.right_surface_group.add(block4)
+
+        self.top_surface_group.add()
+        # self.left_surface_group.add(block3)
+        # self.left_surface_group.add(block4)
+
+        # block_group = pygame.sprite.Group()
+        # block_group.add(block_1_top)
+        # block_group.add(block_2_top)
+
+        self.display_group.add(self.game_mario)
+        self.display_group.add(ground)
+        self.display_group.add(block4)
+        self.display_group.add(block3)
+        # self.display_group.add(block_1_top)
+        # self.display_group.add(block_2_left)
+        # self.display_group.add(block_2_right)
+        # self.display_group.add(block_2_top)
+        # self.display_group.add(self.game_mario.left_surface)
+        # self.display_group.add(self.game_mario.right_surface)
+        # self.display_group.add(self.game_mario.bottom_surface)
+
         while self.running:
             self.game_info_dict["game_info_horizon"].text = self.game_mario.mario_state.state
             self.game_info_dict["game_info_vertical"].text = self.game_mario.mario_state.vertical_state
             self.game_mario.init_accelerated()
+            self.game_mario.ban_on_left = True
+            self.game_mario.ban_on_right = True
+
+            # if pygame.sprite.spritecollide(self.game_mario.bottom_surface, self.bearing_surface_group, False):
+            #     if self.game_mario.instantaneous_velocity.y != 0:
+            #         self.game_mario.init_vertical_state()
+            # else:
+            #     self.game_mario.towards_the_fall()
+
+            # if pygame.sprite.spritecollide(self.game_mario.right_surface, self.left_surface_group, False):
+            #     self.game_mario.ban_on_right = False
+            #     if self.game_mario.instantaneous_velocity.x != 0:
+            #         self.game_mario.ban_on_the_right()
+            #
+            # if pygame.sprite.spritecollide(self.game_mario.left_surface, self.right_surface_group, False):
+            #     self.game_mario.ban_on_left = False
+            #     if self.game_mario.instantaneous_velocity.x != 0:
+            #         self.game_mario.ban_on_the_left()
+
+            # if pygame.sprite.spritecollide(self.game_mario, block_group, False):
+            #     self.game_mario.set_vertical_velocity_to_zero()
+            #     self.game_mario.towards_the_fall()
 
             keyboard_key = pygame.key.get_pressed()
 
+            if not (keyboard_key[pygame.K_RIGHT] or keyboard_key[pygame.K_LEFT]):
+
+                self.game_mario.try_to_speed_cut()
+
+            if keyboard_key[pygame.K_LEFT]:
+                if self.game_mario.is_right_move():
+                    self.game_mario.try_to_speed_cut()
+
             if keyboard_key[pygame.K_RIGHT]:
-                self.game_mario.towards_the_right()
+                if self.game_mario.is_left_move():
+                    self.game_mario.try_to_speed_cut()
 
-            elif keyboard_key[pygame.K_LEFT]:
-                self.game_mario.towards_the_left()
+            if self.game_mario.ban_on_right:
+                if keyboard_key[pygame.K_RIGHT]:
+                    self.game_mario.towards_the_right()
 
-            if pygame.sprite.collide_mask(self.game_mario, ground):
-
-                if self.game_mario.initial_velocity.y != 0:
-                    self.game_mario.init_vertical_state()
+            if self.game_mario.ban_on_left:
+                if keyboard_key[pygame.K_LEFT]:
+                    self.game_mario.towards_the_left()
 
             for event in pygame.event.get():
                 self.keyboard_control(event)
 
+
+            # print(self.game_mario.instantaneous_velocity.y)
             # 根据当前状态保持水平方向运动或静止
             self.game_mario.movement_horizon()
             # 根据当前状态保持垂直方向的运动或静止
             self.game_mario.movement_vertical()
 
             # 更新运动状态
-            self.game_mario.update()
+            self.game_mario.update(self.bearing_surface_group, self.left_surface_group, self.right_surface_group)
 
             self.clock.tick(self.fps)
 
@@ -407,7 +466,8 @@ class Game:
 
             # pygame.draw.rect(self.screen, rect_color, rect_pos, width=0)
             # pygame.draw.rect(self.screen, rect_color, rect_pos_2, width=0)
-            self.sprite_list.draw(self.screen)
+            self.display_group.draw(self.screen)
+            # block_group.draw(self.screen)
             if share_game_data:
                 share_game_data["game_info"] = self.game_progress
                 share_game_data["game_top_score"] = self.game_info_dict["game_top_score"].is_show
