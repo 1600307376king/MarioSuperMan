@@ -33,6 +33,7 @@ from game_config import GAME_OPTION_TEXT_OBJECT_ARR_1, GAME_OPTION_TEXT_OBJECT_A
 from game_config import GAME_OPTION_TEXT_ARR_1, GAME_OPTION_TEXT_ARR_2
 from game_config import GAME_MUSHROOM_INIT_POS
 from game_config import MARIO_INIT_POS_1, MARIO_BASE_IMG
+from pygame.sprite import Sprite
 from game_config import MARIO_INIT_REC_1
 
 
@@ -113,7 +114,9 @@ class Game:
         # self.bearing_surface_group.add(mario)
 
     def draw_all_person(self):
+        # Sprite.draw(self.screen)
         for person in self.person.values():
+
             self.screen.blit(person.image, (person.x, person.y), person.rect)
 
     def game_text_init(self):
@@ -144,11 +147,11 @@ class Game:
             GAME_OPTION_BASE_X, GAME_WINDOWS_HEIGHT - 200, WHITE_TEXT,
             text='TOP - 000000'.center(20, ' '), text_size=TEXT_SIZE_60, obj_name="game_top_score")
 
-        game_info_horizon = Text(100, GAME_WINDOWS_HEIGHT // 2, WHITE_TEXT,
-                                 text="horizon static", text_size=TEXT_SIZE_60, obj_name="game_info_horizon")
-
-        game_info_vertical = Text(100, GAME_WINDOWS_HEIGHT // 2 + 200, WHITE_TEXT,
-                                  text="vertical static", text_size=TEXT_SIZE_60, obj_name="game_info_vertical")
+        # game_info_horizon = Text(100, GAME_WINDOWS_HEIGHT // 2, WHITE_TEXT,
+        #                          text="horizon static", text_size=TEXT_SIZE_60, obj_name="game_info_horizon")
+        #
+        # game_info_vertical = Text(100, GAME_WINDOWS_HEIGHT // 2 + 200, WHITE_TEXT,
+        #                           text="vertical static", text_size=TEXT_SIZE_60, obj_name="game_info_vertical")
 
         for i, game_option_obj_name in enumerate(GAME_OPTION_TEXT_OBJECT_ARR_1):
             self.game_start_text[game_option_obj_name] = Text(
@@ -164,8 +167,8 @@ class Game:
         self.game_info_dict[coin_text.obj_name] = coin_text
         self.game_info_dict[game_level_num.obj_name] = game_level_num
         self.game_info_dict[game_top_score.obj_name] = game_top_score
-        self.game_info_dict[game_info_horizon.obj_name] = game_info_horizon
-        self.game_info_dict[game_info_vertical.obj_name] = game_info_vertical
+        # self.game_info_dict[game_info_horizon.obj_name] = game_info_horizon
+        # self.game_info_dict[game_info_vertical.obj_name] = game_info_vertical
 
     def game_text_draw(self):
         for txt in self.game_info_dict.values():
@@ -317,10 +320,11 @@ class Game:
                     self.option_val = 1
                     self.game_info_dict["game_top_score"].is_show = True
 
-            elif event.key == K_SPACE:
-                # mario jump
-                if self.game_mario.up_velocity == 0:
-                    self.game_mario.towards_the_rise()
+            if self.game_progress == 1:
+                if event.key == K_SPACE:
+                    # mario jump
+                    if self.game_mario.up_velocity == 0:
+                        self.game_mario.towards_the_rise()
 
     def joystick_control(self, event):
         if event.type == pygame.JOYBUTTONUP or event.type == pygame.JOYBUTTONDOWN:
@@ -333,6 +337,60 @@ class Game:
                 elif i == 1 and button == 1:
                     print("press B")
 
+    def all_control(self):
+        """
+        所有操控函数集合
+        :return:
+        """
+        for event in pygame.event.get():
+            self.keyboard_control(event)
+
+        if self.game_progress == 1:
+            # 游戏开始时运行对mario的操作
+            self.game_process_1_control()
+
+    def block_state_auto_update(self):
+        """
+        游戏block对象状态自动更新，包括撞到建筑物后更新状态，碰撞检测等
+        :return:
+        """
+        # 游戏进行时对mario的状态更新
+        if self.game_progress == 1:
+            # 根据当前状态保持水平方向运动或静止
+            self.game_mario.movement_horizon()
+            # 根据当前状态保持垂直方向的运动或静止
+            self.game_mario.movement_vertical()
+
+            self.game_mario.collision_check(self.bearing_surface_group, self.left_surface_group,
+                                            self.right_surface_group)
+
+    def game_process_1_control(self):
+        """
+        游戏进行时的键盘控制
+        :return: None
+        """
+        keyboard_key = pygame.key.get_pressed()
+        if not (keyboard_key[pygame.K_RIGHT] or keyboard_key[pygame.K_LEFT]):
+            self.game_mario.try_to_speed_cut()
+
+        if keyboard_key[pygame.K_RIGHT]:
+            self.game_mario.towards_the_right()
+
+        if keyboard_key[pygame.K_LEFT]:
+            self.game_mario.towards_the_left()
+
+    def all_block_position_update(self):
+        """
+        所以block的坐标更新
+        :return:
+        """
+        if self.game_progress == 1:
+            self.game_mario.update()
+
+    def all_block_draw(self):
+        if self.game_progress == 1:
+            self.display_group.draw(self.screen)
+
     def run_game(self, share_game_data=None):
         """
         launch game
@@ -343,7 +401,6 @@ class Game:
         self.mario_init()
         self.game_bg_logo_init()
         self.game_text_init()
-
 
         block_1_left = Block((0, 255, 0), 1, 50, 500, 957)
         block_1_right = Block((0, 0, 255), 1, 50, 550, 957)
@@ -379,33 +436,15 @@ class Game:
         self.display_group.add(block3)
 
         while self.running:
-            self.game_info_dict["game_info_horizon"].text = self.game_mario.mario_state.state
-            self.game_info_dict["game_info_vertical"].text = self.game_mario.mario_state.vertical_state
+            # self.game_info_dict["game_info_horizon"].text = self.game_mario.mario_state.state
+            # self.game_info_dict["game_info_vertical"].text = self.game_mario.mario_state.vertical_state
 
-            # 根据当前状态保持水平方向运动或静止
-            self.game_mario.movement_horizon()
-            # 根据当前状态保持垂直方向的运动或静止
-            self.game_mario.movement_vertical()
+            self.block_state_auto_update()
 
-            self.game_mario.collision_check(self.bearing_surface_group, self.left_surface_group,
-                                            self.right_surface_group)
-
-            keyboard_key = pygame.key.get_pressed()
-
-            if not (keyboard_key[pygame.K_RIGHT] or keyboard_key[pygame.K_LEFT]):
-                self.game_mario.try_to_speed_cut()
-
-            if keyboard_key[pygame.K_RIGHT]:
-                self.game_mario.towards_the_right()
-
-            if keyboard_key[pygame.K_LEFT]:
-                self.game_mario.towards_the_left()
-
-            for event in pygame.event.get():
-                self.keyboard_control(event)
+            self.all_control()
 
             # 更新运动状态
-            self.game_mario.update()
+            self.all_block_position_update()
 
             self.clock.tick(self.fps)
 
@@ -413,13 +452,9 @@ class Game:
             self.game_bg_logo_draw()
             # 绘制游戏文本类
             self.game_text_draw()
-            # 绘制所有游戏人物
-            # self.draw_all_person()
 
-            # pygame.draw.rect(self.screen, rect_color, rect_pos, width=0)
-            # pygame.draw.rect(self.screen, rect_color, rect_pos_2, width=0)
-            self.display_group.draw(self.screen)
-            # block_group.draw(self.screen)
+            self.all_block_draw()
+
             if share_game_data:
                 share_game_data["game_info"] = self.game_progress
                 share_game_data["game_top_score"] = self.game_info_dict["game_top_score"].is_show

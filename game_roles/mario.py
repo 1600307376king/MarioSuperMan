@@ -7,7 +7,7 @@ import time
 from game_roles.role_conifg import player_img_load_dic, SCALE_MULTIPLE
 from game_roles.base_element import BaseElement
 from game_roles.state_mode import StateMode
-from game_config import MAX_VERTICAL_VELOCITY, MAX_HORIZON_VELOCITY, MARIO_INIT_POS_1
+from game_config import MAX_VERTICAL_VELOCITY, MAX_HORIZON_VELOCITY, MARIO_INIT_POS_1, SCALE_MULTIPLE_3
 from game_roles.block_surface import BlockSurface
 
 
@@ -16,8 +16,8 @@ class Mario(BaseElement):
         super().__init__(x, y, obj_name)
         self.image = img
         self.image = pygame.transform.scale(
-            self.image, (self.image.get_rect().width * 3,
-                         self.image.get_rect().height * 3))
+            self.image, (self.image.get_rect().width * SCALE_MULTIPLE_3,
+                         self.image.get_rect().height * SCALE_MULTIPLE_3))
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = MARIO_INIT_POS_1
         self.game_score = 0
@@ -27,6 +27,8 @@ class Mario(BaseElement):
         self.accelerated_x = 6
         self.slow_down_decelerate = 4
         self.mario_state = StateMode()
+        self.init_draw_rect = (96 * SCALE_MULTIPLE_3, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
+        self.image = self.image.subsurface(self.init_draw_rect)
 
     def keep_rise(self):
 
@@ -199,5 +201,8 @@ class Mario(BaseElement):
                         break
 
     def update(self):
+        # rect = (0, 0, 14 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
+        # self.image = self.image.subsurface(rect)
+        # self.image.subsurface(self.init_draw_rect)
         self.rect.x += self.left_velocity + self.right_velocity
         self.rect.y += self.down_velocity + self.up_velocity
