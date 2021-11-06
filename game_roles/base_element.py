@@ -1,9 +1,69 @@
 from pygame import sprite
 
 
-class BaseElement(sprite.Sprite):
-    def __init__(self, x, y, obj_name="", *groups):
+class BlockVelocity(sprite.Sprite):
+    """
+    all block instantaneous velocity
+    """
+    def __init__(self, *groups):
         super().__init__(*groups)
+        self._left_velocity = 0
+        self._right_velocity = 0
+        self._down_velocity = 0
+        self._up_velocity = 0
+
+    @property
+    def left_velocity(self):
+        return self._left_velocity
+
+    @left_velocity.setter
+    def left_velocity(self, l_vel):
+        if l_vel >= 0:
+            self._left_velocity = 0
+        else:
+            self._left_velocity = l_vel
+        self._right_velocity = 0
+
+    @property
+    def right_velocity(self):
+        return self._right_velocity
+
+    @right_velocity.setter
+    def right_velocity(self, r_vel):
+        if r_vel <= 0:
+            self._right_velocity = 0
+        else:
+            self._right_velocity = r_vel
+        self._left_velocity = 0
+
+    @property
+    def down_velocity(self):
+        return self._down_velocity
+
+    @down_velocity.setter
+    def down_velocity(self, d_vel):
+        if d_vel <= 0:
+            self._down_velocity = 0
+        else:
+            self._down_velocity = d_vel
+            self._up_velocity = 0
+
+    @property
+    def up_velocity(self):
+        return self._up_velocity
+
+    @up_velocity.setter
+    def up_velocity(self, u_vel):
+        if u_vel > 0:
+            self._up_velocity = 0
+        else:
+            self._up_velocity = u_vel
+        self._down_velocity = 0
+
+
+class BaseElement(BlockVelocity):
+    def __init__(self, x, y, obj_name=""):
+        super().__init__()
         self.x = x
         self.y = y
         self.is_show = True

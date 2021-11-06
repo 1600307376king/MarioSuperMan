@@ -21,55 +21,31 @@ class Mario(BaseElement):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = MARIO_INIT_POS_1
         self.game_score = 0
-        self.accelerated = pygame.Vector2(0, 0)
-        # 马里奥运动瞬时运动
-        self.instantaneous_velocity = pygame.Vector2(0, 0)
         self.direction = pygame.Vector2(-1, 1)
         self.jump_initial_velocity = -20
-        self.jump_gravity = 2
+        self.global_gravity = 2
         self.accelerated_x = 6
         self.slow_down_decelerate = 4
         self.mario_state = StateMode()
-        self.ban_on_left = True
-        self.ban_on_right = True
-        self.left_surface = BlockSurface((0, 255, 0), 1, 50, self.rect.x, self.rect.y)
-        self.right_surface = BlockSurface((0, 0, 255), 1, 50, self.rect.right, self.rect.y)
-        self.bottom_surface = BlockSurface((255, 165, 0), 36, 1, self.rect.x, self.rect.bottom)
 
     def keep_rise(self):
-        self.accelerated.y = self.jump_gravity
-        self.instantaneous_velocity.y += self.direction.y * self.accelerated.y
+
+        self.up_velocity += self.global_gravity
         self.mario_state.vertical_state = "rise"
         # 减速后最小速度为0
-        if self.instantaneous_velocity.y >= 0:
+        if self.up_velocity >= 0:
             self.mario_state.vertical_state = "fall"
 
-    def set_vertical_init_velocity(self):
-        self.instantaneous_velocity.y = self.jump_initial_velocity
-
-    def set_vertical_velocity_to_zero(self):
-        self.instantaneous_velocity.y = -self.instantaneous_velocity.y
+    def to_reserve_up_velocity(self):
+        self.up_velocity = -self.up_velocity
 
     def keep_fall(self):
-        self.accelerated.y = self.jump_gravity
-        self.instantaneous_velocity.y += self.direction.y * self.accelerated.y
+        self.down_velocity += self.global_gravity
         self.mario_state.vertical_state = "fall"
 
-    def init_accelerated(self):
-        self.accelerated.x, _ = 0, 0
-
     def init_vertical_state(self):
-        self.accelerated.y = 0
-        self.instantaneous_velocity.y = 0
+        self.down_velocity = 0
         self.mario_state.vertical_state = "vertical_static"
-
-    def ban_on_the_left(self):
-        self.instantaneous_velocity.x = 0
-        self.mario_state.state = "static"
-
-    def ban_on_the_right(self):
-        self.instantaneous_velocity.x = 0
-        self.mario_state.state = "static"
 
     def movement_horizon(self):
         if self.mario_state.vertical_state not in ("rise", "fall"):
@@ -93,47 +69,41 @@ class Mario(BaseElement):
 
     def right_decelerate(self):
         # 向右运动时减速
-        if self.instantaneous_velocity.x > 0 and self.instantaneous_velocity.y == 0:
-            self.accelerated.x = self.slow_down_decelerate
-            self.instantaneous_velocity.x += self.direction.x * self.accelerated.x
+        if self.right_velocity > 0 and self.up_velocity == 0 and self.down_velocity == 0:
+            self.right_velocity += -1 * self.slow_down_decelerate
             self.mario_state.state = "right_decelerate"
             # 减速后最小速度为0
-            if self.instantaneous_velocity.x <= 0:
-                self.instantaneous_velocity.x = 0
+            if self.right_velocity == 0:
                 self.mario_state.state = "static"
 
     def left_decelerate(self):
         # 向左运动时减速
 
-        if self.instantaneous_velocity.x < 0 and self.instantaneous_velocity.y == 0:
-            self.accelerated.x = -self.slow_down_decelerate
-            self.instantaneous_velocity.x += self.direction.x * self.accelerated.x
+        if self.left_velocity < 0 and self.up_velocity == 0 and self.down_velocity == 0:
+            self.left_velocity += self.slow_down_decelerate
             self.mario_state.state = "left_decelerate"
             # 减速后最小速度为0
-            if self.instantaneous_velocity.x >= 0:
-                self.instantaneous_velocity.x = 0
+            if self.left_velocity == 0:
                 self.mario_state.state = "static"
 
     def right_move(self):
-
+        """
+        keep right move
+        :return:
+        """
         self.slow_down_decelerate = 1
-        self.accelerated.x = self.accelerated_x
-        self.instantaneous_velocity += self.accelerated
-        if self.instantaneous_velocity.x >= 0:
-            self.instantaneous_velocity.x = min(self.instantaneous_velocity.x, MAX_VERTICAL_VELOCITY)
-        else:
-            self.instantaneous_velocity.x = max(self.instantaneous_velocity.x, -MAX_VERTICAL_VELOCITY)
+        self.right_velocity += self.accelerated_x
+        self.right_velocity = min(self.right_velocity, MAX_VERTICAL_VELOCITY)
         self.mario_state.state = "right_move"
 
     def left_move(self):
+        """
+        keep left move
+        :return:
+        """
         self.slow_down_decelerate = 1
-        self.accelerated.x = -self.accelerated_x
-        # self.instantaneous_velocity.x = -2
-        self.instantaneous_velocity += self.accelerated
-        if self.instantaneous_velocity.x >= 0:
-            self.instantaneous_velocity.x = min(self.instantaneous_velocity.x, MAX_VERTICAL_VELOCITY)
-        else:
-            self.instantaneous_velocity.x = max(self.instantaneous_velocity.x, -MAX_VERTICAL_VELOCITY)
+        self.left_velocity += -self.accelerated_x
+        self.left_velocity = max(self.left_velocity, -MAX_VERTICAL_VELOCITY)
         self.mario_state.state = "left_move"
 
     def towards_the_right(self):
@@ -170,7 +140,7 @@ class Mario(BaseElement):
 
     def towards_the_rise(self):
         if "rise" in self.mario_state.vertical_state_transform(self.mario_state.vertical_state):
-            self.set_vertical_init_velocity()
+            self.up_velocity = self.jump_initial_velocity
             self.mario_state.vertical_state = "rise"
 
     def towards_the_fall(self):
@@ -184,7 +154,8 @@ class Mario(BaseElement):
 
     def towards_the_static(self):
         self.mario_state.state = "static"
-        self.instantaneous_velocity.x = 0
+        self.left_velocity = 0
+        self.right_velocity = 0
 
     def is_towards_the_left(self):
         return self.mario_state.state in ("left_decelerate", "left_move")
@@ -192,16 +163,17 @@ class Mario(BaseElement):
     def is_towards_the_right(self):
         return self.mario_state.state in ("right_decelerate", "right_move")
 
-    def update(self, bearing_surface_collision, left_surface_collision, right_surface_collision):
+    def collision_check(self, bearing_surface_collision, left_surface_collision, right_surface_collision):
 
         for block in bearing_surface_collision:
             # 避免下降过头，超过支撑面
-            if self.instantaneous_velocity.y >= block.rect.top - self.rect.bottom and \
+            if self.down_velocity >= block.rect.top - self.rect.bottom and \
                     block.rect.top >= self.rect.bottom:
                 self.rect.y += block.rect.top - self.rect.bottom
                 # 检测是否碰撞
                 if self.is_y_axis_down_collide(bearing_surface_collision):
-                    self.towards_the_vertical_static()
+                    # self.towards_the_vertical_static()
+                    self.init_vertical_state()
                     break
 
                 self.towards_the_fall()
@@ -210,31 +182,22 @@ class Mario(BaseElement):
             for block in left_surface_collision:
                 # 避免mario向左移动发生碰撞时移动过头
 
-                if abs(self.instantaneous_velocity.x) >= self.rect.left - block.rect.right and \
+                if abs(self.left_velocity) >= self.rect.left - block.rect.right and \
                         block.rect.right <= self.rect.left:
                     self.rect.x += -(self.rect.left - block.rect.right)
                     if self.is_x_axis_left_collide(left_surface_collision):
-                        self.ban_on_left = False
                         self.towards_the_static()
                         break
 
         if self.is_towards_the_right():
             for block in right_surface_collision:
-                if self.instantaneous_velocity.x >= block.rect.left - self.rect.right and \
+                if self.right_velocity >= block.rect.left - self.rect.right and \
                         block.rect.left >= self.rect.right:
                     self.rect.x += block.rect.left - self.rect.right
                     if self.is_x_axis_right_collide(left_surface_collision):
-                        self.ban_on_right = True
                         self.towards_the_static()
                         break
 
-        if self.mario_state.vertical_state == "vertical_static":
-            self.instantaneous_velocity.y = 0
-            self.accelerated.y = 0
-
-        self.rect.x += self.instantaneous_velocity.x
-        self.rect.y += self.instantaneous_velocity.y
-
-        # self.left_surface.rect.x, self.left_surface.rect.y = self.rect.x, self.rect.y
-        # self.right_surface.rect.x, self.right_surface.rect.y = self.rect.right, self.rect.y
-        # self.bottom_surface.rect.x, self.bottom_surface.rect.y = self.rect.x, self.rect.bottom
+    def update(self):
+        self.rect.x += self.left_velocity + self.right_velocity
+        self.rect.y += self.down_velocity + self.up_velocity
