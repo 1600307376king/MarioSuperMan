@@ -14,10 +14,13 @@ from game_roles.block_surface import BlockSurface
 class Mario(BaseElement):
     def __init__(self, x, y, img, obj_name=""):
         super().__init__(x, y, obj_name)
-        self.image = img
-        self.image = pygame.transform.scale(
-            self.image, (self.image.get_rect().width * SCALE_MULTIPLE_3,
-                         self.image.get_rect().height * SCALE_MULTIPLE_3))
+        self.all_image = img
+        self.all_image = pygame.transform.scale(
+            self.all_image, (self.all_image.get_rect().width * SCALE_MULTIPLE_3,
+                             self.all_image.get_rect().height * SCALE_MULTIPLE_3))
+        self.init_draw_rect = (96 * SCALE_MULTIPLE_3, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
+        self.image = self.all_image.subsurface(self.init_draw_rect)
+        self.frame = 0
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = MARIO_INIT_POS_1
         self.game_score = 0
@@ -27,8 +30,6 @@ class Mario(BaseElement):
         self.accelerated_x = 6
         self.slow_down_decelerate = 4
         self.mario_state = StateMode()
-        self.init_draw_rect = (96 * SCALE_MULTIPLE_3, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
-        self.image = self.image.subsurface(self.init_draw_rect)
 
     def keep_rise(self):
 
@@ -97,6 +98,7 @@ class Mario(BaseElement):
         self.right_velocity += self.accelerated_x
         self.right_velocity = min(self.right_velocity, MAX_VERTICAL_VELOCITY)
         self.mario_state.state = "right_move"
+        self.right_move_animation()
 
     def left_move(self):
         """
@@ -107,6 +109,7 @@ class Mario(BaseElement):
         self.left_velocity += -self.accelerated_x
         self.left_velocity = max(self.left_velocity, -MAX_VERTICAL_VELOCITY)
         self.mario_state.state = "left_move"
+        self.left_move_animation()
 
     def towards_the_right(self):
         if "right_move" in self.mario_state.state_transform(self.mario_state.state):
@@ -200,9 +203,30 @@ class Mario(BaseElement):
                         self.towards_the_static()
                         break
 
+    def right_move_animation(self):
+        self.init_draw_rect = (16 * (self.frame % 2) * SCALE_MULTIPLE_3, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
+
+        self.image = self.all_image.subsurface(self.init_draw_rect)
+
+    def left_move_animation(self):
+        self.init_draw_rect = (16 * (self.frame % 2) * SCALE_MULTIPLE_3, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
+        self.image = self.all_image.subsurface(self.init_draw_rect)
+
+    def static_animation(self):
+        self.init_draw_rect = (96 * SCALE_MULTIPLE_3, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
+        self.image = self.all_image.subsurface(self.init_draw_rect)
+
+    def check_static_to_change_animation(self):
+        if self.mario_state.vertical_state == "vertical_static":
+            if self.mario_state.state == "static":
+                self.static_animation()
+            elif self.mario_state.state == "right_move":
+                self.right_move_animation()
+            elif self.mario_state.state == "left_move":
+                self.left_move_animation()
+        self.frame += 1
+
     def update(self):
-        # rect = (0, 0, 14 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
-        # self.image = self.image.subsurface(rect)
-        # self.image.subsurface(self.init_draw_rect)
+        self.check_static_to_change_animation()
         self.rect.x += self.left_velocity + self.right_velocity
         self.rect.y += self.down_velocity + self.up_velocity
