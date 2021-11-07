@@ -9,6 +9,8 @@ from game_roles.base_element import BaseElement
 from game_roles.state_mode import StateMode
 from game_config import MAX_VERTICAL_VELOCITY, MAX_HORIZON_VELOCITY, MARIO_INIT_POS_1, SCALE_MULTIPLE_3
 from game_roles.block_surface import BlockSurface
+from game_roles.game_music import RoleMusic
+from game_config import MARIO_SMALL_JUMP_SOUND_PATH
 
 
 class Mario(BaseElement):
@@ -18,6 +20,7 @@ class Mario(BaseElement):
         self.all_image = pygame.transform.scale(
             self.all_image, (self.all_image.get_rect().width * SCALE_MULTIPLE_3,
                              self.all_image.get_rect().height * SCALE_MULTIPLE_3))
+        self.flip_image = pygame.transform.flip(self.all_image, True, False)
         self.init_draw_rect = (96 * SCALE_MULTIPLE_3, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
         self.image = self.all_image.subsurface(self.init_draw_rect)
         self.frame = 0
@@ -25,11 +28,19 @@ class Mario(BaseElement):
         self.rect.x, self.rect.y = MARIO_INIT_POS_1
         self.game_score = 0
         self.direction = pygame.Vector2(-1, 1)
-        self.jump_initial_velocity = -20
-        self.global_gravity = 2
+        self.jump_initial_velocity = -32
+        self.global_gravity = 4
         self.accelerated_x = 6
         self.slow_down_decelerate = 4
         self.mario_state = StateMode()
+        self.rect_state_matrix = tuple((16 * SCALE_MULTIPLE_3 * i, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3) for i in range(14))
+        self.is_turn_right = True
+        self.animation_unit = 16 * SCALE_MULTIPLE_3
+        self.jump_music = RoleMusic(pygame.mixer.Sound(MARIO_SMALL_JUMP_SOUND_PATH))
+
+    def sound_play(self):
+        if not self.jump_music.is_playing:
+            self.jump_music.music.play()
 
     def keep_rise(self):
 
@@ -147,6 +158,7 @@ class Mario(BaseElement):
         if "rise" in self.mario_state.vertical_state_transform(self.mario_state.vertical_state):
             self.up_velocity = self.jump_initial_velocity
             self.mario_state.vertical_state = "rise"
+            self.sound_play()
 
     def towards_the_fall(self):
         # print(self.mario_state.vertical_state)
@@ -204,17 +216,39 @@ class Mario(BaseElement):
                         break
 
     def right_move_animation(self):
-        self.init_draw_rect = (16 * (self.frame % 2) * SCALE_MULTIPLE_3, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
-
+        self.init_draw_rect = self.rect_state_matrix[self.frame % 2]
         self.image = self.all_image.subsurface(self.init_draw_rect)
+        self.is_turn_right = True
 
     def left_move_animation(self):
-        self.init_draw_rect = (16 * (self.frame % 2) * SCALE_MULTIPLE_3, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
-        self.image = self.all_image.subsurface(self.init_draw_rect)
+        self.init_draw_rect = self.rect_state_matrix[-1 * (self.frame % 2) - 1]
+        self.image = self.flip_image.subsurface(self.init_draw_rect)
+        self.is_turn_right = False
 
     def static_animation(self):
-        self.init_draw_rect = (96 * SCALE_MULTIPLE_3, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
+        if self.is_turn_right:
+            self.init_draw_rect = (96 * SCALE_MULTIPLE_3, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
+            self.image = self.all_image.subsurface(self.init_draw_rect)
+        else:
+
+            self.init_draw_rect = (96 * SCALE_MULTIPLE_3 + self.animation_unit, 0, 16 * SCALE_MULTIPLE_3, 16 * SCALE_MULTIPLE_3)
+            self.image = self.flip_image.subsurface(self.init_draw_rect)
+
+    # def left_decelerate_animation(self):
+    #     self.init_draw_rect = self.rect_state_matrix[-4]
+    #     self.image = self.flip_image.subsurface(self.init_draw_rect)
+    #
+    # def right_decelerate_animation(self):
+    #     self.init_draw_rect = self.rect_state_matrix[3]
+    #     self.image = self.all_image.subsurface(self.init_draw_rect)
+
+    def jump_turn_right_animation(self):
+        self.init_draw_rect = self.rect_state_matrix[4]
         self.image = self.all_image.subsurface(self.init_draw_rect)
+
+    def jump_turn_left_animation(self):
+        self.init_draw_rect = self.rect_state_matrix[-5]
+        self.image = self.flip_image.subsurface(self.init_draw_rect)
 
     def check_static_to_change_animation(self):
         if self.mario_state.vertical_state == "vertical_static":
@@ -224,6 +258,17 @@ class Mario(BaseElement):
                 self.right_move_animation()
             elif self.mario_state.state == "left_move":
                 self.left_move_animation()
+        elif self.mario_state.vertical_state == "rise":
+            if self.is_turn_right:
+                self.jump_turn_right_animation()
+            elif not self.is_turn_right:
+                self.jump_turn_left_animation()
+
+            # elif self.mario_state.state == "right_decelerate":
+            #     self.right_decelerate_animation()
+            # elif self.mario_state.state == "left_decelerate":
+            #     self.left_decelerate_animation()
+
         self.frame += 1
 
     def update(self):

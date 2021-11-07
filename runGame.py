@@ -33,6 +33,8 @@ from game_config import GAME_OPTION_TEXT_OBJECT_ARR_1, GAME_OPTION_TEXT_OBJECT_A
 from game_config import GAME_OPTION_TEXT_ARR_1, GAME_OPTION_TEXT_ARR_2
 from game_config import GAME_MUSHROOM_INIT_POS
 from game_config import MARIO_INIT_POS_1, MARIO_BASE_IMG
+from game_config import GAME_MUSIC_FILE_PATH_1
+from game_roles.game_music import RoleMusic
 from pygame.sprite import Sprite
 from game_config import MARIO_INIT_REC_1
 
@@ -90,11 +92,12 @@ class Game:
         self.left_surface_group = pygame.sprite.Group()
         self.right_surface_group = pygame.sprite.Group()
         self.top_surface_group = pygame.sprite.Group()
-        self.display_group = pygame.sprite.Group()
-
+        self.display_back_group = pygame.sprite.Group()
+        self.display_font_group = pygame.sprite.Group()
         self.joysticks = []
         self.joysticks1 = None
         self.game_mario = None
+        self.bgm = None
 
     def mario_init(self):
         mario = Mario(
@@ -147,11 +150,11 @@ class Game:
             GAME_OPTION_BASE_X, GAME_WINDOWS_HEIGHT - 200, WHITE_TEXT,
             text='TOP - 000000'.center(20, ' '), text_size=TEXT_SIZE_60, obj_name="game_top_score")
 
-        # game_info_horizon = Text(100, GAME_WINDOWS_HEIGHT // 2, WHITE_TEXT,
-        #                          text="horizon static", text_size=TEXT_SIZE_60, obj_name="game_info_horizon")
-        #
-        # game_info_vertical = Text(100, GAME_WINDOWS_HEIGHT // 2 + 200, WHITE_TEXT,
-        #                           text="vertical static", text_size=TEXT_SIZE_60, obj_name="game_info_vertical")
+        game_info_horizon = Text(100, GAME_WINDOWS_HEIGHT // 2, WHITE_TEXT,
+                                 text="horizon static", text_size=TEXT_SIZE_60, obj_name="game_info_horizon")
+
+        game_info_vertical = Text(100, GAME_WINDOWS_HEIGHT // 2 + 200, WHITE_TEXT,
+                                  text="vertical static", text_size=TEXT_SIZE_60, obj_name="game_info_vertical")
 
         for i, game_option_obj_name in enumerate(GAME_OPTION_TEXT_OBJECT_ARR_1):
             self.game_start_text[game_option_obj_name] = Text(
@@ -167,8 +170,8 @@ class Game:
         self.game_info_dict[coin_text.obj_name] = coin_text
         self.game_info_dict[game_level_num.obj_name] = game_level_num
         self.game_info_dict[game_top_score.obj_name] = game_top_score
-        # self.game_info_dict[game_info_horizon.obj_name] = game_info_horizon
-        # self.game_info_dict[game_info_vertical.obj_name] = game_info_vertical
+        self.game_info_dict[game_info_horizon.obj_name] = game_info_horizon
+        self.game_info_dict[game_info_vertical.obj_name] = game_info_vertical
 
     def game_text_draw(self):
         for txt in self.game_info_dict.values():
@@ -387,9 +390,26 @@ class Game:
         if self.game_progress == 1:
             self.game_mario.update()
 
-    def all_block_draw(self):
+    def all_back_block_draw(self):
         if self.game_progress == 1:
-            self.display_group.draw(self.screen)
+            self.display_back_group.draw(self.screen)
+
+    def all_font_block_draw(self):
+        if self.game_progress == 1:
+            self.display_font_group.draw(self.screen)
+
+    def load_game_progress_1_music(self):
+        self.bgm = RoleMusic(pygame.mixer.Sound(GAME_MUSIC_FILE_PATH_1))
+
+    def play_music(self):
+        # 游戏开始时播放背景音乐
+        # 且只播放一次
+        if not self.bgm.is_playing and self.game_progress == 1:
+            self.bgm.music.play()
+            self.bgm.is_playing = True
+        if self.game_progress == 0 and self.bgm is not None:
+            self.bgm.music.stop()
+            self.bgm.is_playing = False
 
     def run_game(self, share_game_data=None):
         """
@@ -398,47 +418,44 @@ class Game:
         :return:
         """
         self.running = True
+        pygame.mixer.init()
+        self.load_game_progress_1_music()
         self.mario_init()
         self.game_bg_logo_init()
         self.game_text_init()
 
-        block_1_left = Block((0, 255, 0), 1, 50, 500, 957)
-        block_1_right = Block((0, 0, 255), 1, 50, 550, 957)
-        block_1_top = Block((255, 0, 255), 50, 1, 500, 957)
+        block2 = Block((0, 0, 255), 10, 1100, 0, 0)
 
-        block_2_left = Block((0, 255, 0), 1, 50, 800, 957)
-        block_2_right = Block((0, 0, 255), 1, 50, 850, 957)
-        block_2_top = Block((255, 0, 255), 50, 1, 800, 957)
+        block3 = Block((255, 0, 255), 80, 93, 1348, 911)
 
-        block2 = Block((0, 0, 255), 1, 50, 500, 957)
-
-        block3 = Block((255, 0, 255), 50, 50, 500, 957)
-
-        block4 = Block((0, 255, 255), 50, 50, 800, 957)
+        block4 = Block((0, 255, 255), 80, 140, 1829, 864)
+        block5 = Block((0, 0, 255), 10, 1100, 1920, 0)
 
         ground = Block((0, 0, 255), 1920, 60, 0, 1005)
+        ground.image.convert_alpha()
 
         self.bearing_surface_group.add(ground)
         self.bearing_surface_group.add(block3)
         self.bearing_surface_group.add(block4)
 
-        # self.left_surface_group.add(self.game_mario)
-        # self.left_surface_group.add(ground)
         self.left_surface_group.add(block3)
         self.left_surface_group.add(block4)
+        self.left_surface_group.add(block2)
+        self.left_surface_group.add(block5)
 
         self.right_surface_group.add(block3)
         self.right_surface_group.add(block4)
+        self.right_surface_group.add(block2)
+        self.right_surface_group.add(block5)
 
-        self.display_group.add(self.game_mario)
-        self.display_group.add(ground)
-        self.display_group.add(block4)
-        self.display_group.add(block3)
-
+        self.display_font_group.add(self.game_mario)
+        self.display_back_group.add(ground)
+        self.display_back_group.add(block4)
+        self.display_back_group.add(block3)
+        self.display_back_group.add(block2)
         while self.running:
             # self.game_info_dict["game_info_horizon"].text = self.game_mario.mario_state.state
             # self.game_info_dict["game_info_vertical"].text = self.game_mario.mario_state.vertical_state
-
             self.block_state_auto_update()
 
             self.all_control()
@@ -453,8 +470,10 @@ class Game:
             # 绘制游戏文本类
             self.game_text_draw()
 
-            self.all_block_draw()
-
+            self.all_font_block_draw()
+            self.all_back_block_draw()
+            self.play_music()
+            self.game_info_dict["mouse_pos"].text = "x = {0}, y = {1}".format(*pygame.mouse.get_pos())
             if share_game_data:
                 share_game_data["game_info"] = self.game_progress
                 share_game_data["game_top_score"] = self.game_info_dict["game_top_score"].is_show
