@@ -5,7 +5,7 @@ import pydirectinput
 import pyautogui as pg
 from multiprocessing import Process, Manager
 from runGame import Game
-from game_config import GAME_WINDOWS_WIDTH, GAME_WINDOWS_HEIGHT, GAME_NAME
+from setting.game_config import GAME_WINDOWS_WIDTH, GAME_WINDOWS_HEIGHT, GAME_NAME
 
 
 def launch_game(share_value):

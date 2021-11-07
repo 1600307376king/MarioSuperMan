@@ -17,26 +17,26 @@ from game_roles.game_text import Text
 from game_roles.game_level import Level, LogoImg
 from game_roles.mario import Mario
 from game_roles.block_surface import Block, BlockSurface
-from game_config import TEXT_FONT_PATH_1
-from game_config import GAME_LEVEL_BG_IMG_1, GAME_START_LOGO_IMG
-from game_config import WHITE_TEXT
-from game_config import TEXT_SIZE_60, GAME_OPTION_INTERVAL
-from game_config import GAME_LEVEL_REC_1, GAME_START_CENTER_LOGO_REC
-from game_config import COIN_IMG, COIN_IMG_REC, SCALE_MULTIPLE_3, SCALE_MULTIPLE_5
-from game_config import GAME_OPTION_ICON, GAME_MUSHROOM_LOGO_REC
-from game_config import GAME_WINDOWS_WIDTH, GAME_WINDOWS_HEIGHT, GAME_NAME
-from game_config import GAME_OPTION_BASE_X, GAME_OPTION_BASE_Y
-from game_config import GAME_LEVEL_TEXT_INIT_POS, MARIO_TITLE_INIT_POS
-from game_config import TIME_REMAINING_TITLE_INIT_POS, GAME_SCORE_TEXT_INIT_POS
-from game_config import GAME_COIN_TEXT_INIT_POS, GAME_LEVEL_NUM_INIT_POS
-from game_config import GAME_OPTION_TEXT_OBJECT_ARR_1, GAME_OPTION_TEXT_OBJECT_ARR_2
-from game_config import GAME_OPTION_TEXT_ARR_1, GAME_OPTION_TEXT_ARR_2
-from game_config import GAME_MUSHROOM_INIT_POS
-from game_config import MARIO_INIT_POS_1, MARIO_BASE_IMG
-from game_config import GAME_MUSIC_FILE_PATH_1
+from setting.game_config import TEXT_FONT_PATH_1
+from setting.game_config import GAME_LEVEL_BG_IMG_1, GAME_START_LOGO_IMG
+from setting.game_config import WHITE_TEXT
+from setting.game_config import TEXT_SIZE_60, GAME_OPTION_INTERVAL
+from setting.game_config import GAME_LEVEL_REC_1, GAME_START_CENTER_LOGO_REC
+from setting.game_config import COIN_IMG, COIN_IMG_REC, SCALE_MULTIPLE_3, SCALE_MULTIPLE_5
+from setting.game_config import GAME_OPTION_ICON, GAME_MUSHROOM_LOGO_REC
+from setting.game_config import GAME_WINDOWS_WIDTH, GAME_WINDOWS_HEIGHT, GAME_NAME
+from setting.game_config import GAME_OPTION_BASE_X, GAME_OPTION_BASE_Y
+from setting.game_config import GAME_LEVEL_TEXT_INIT_POS, MARIO_TITLE_INIT_POS
+from setting.game_config import TIME_REMAINING_TITLE_INIT_POS, GAME_SCORE_TEXT_INIT_POS
+from setting.game_config import GAME_COIN_TEXT_INIT_POS, GAME_LEVEL_NUM_INIT_POS
+from setting.game_config import GAME_OPTION_TEXT_OBJECT_ARR_1, GAME_OPTION_TEXT_OBJECT_ARR_2
+from setting.game_config import GAME_OPTION_TEXT_ARR_1, GAME_OPTION_TEXT_ARR_2
+from setting.game_config import GAME_MUSHROOM_INIT_POS
+from setting.game_config import MARIO_INIT_POS_1, MARIO_BASE_IMG
+from setting.game_config import GAME_MUSIC_FILE_PATH_1
 from game_roles.game_music import RoleMusic
 from pygame.sprite import Sprite
-from game_config import MARIO_INIT_REC_1
+from setting.game_config import MARIO_INIT_REC_1
 
 
 def scale_tuple(tp, multiple):
@@ -170,8 +170,8 @@ class Game:
         self.game_info_dict[coin_text.obj_name] = coin_text
         self.game_info_dict[game_level_num.obj_name] = game_level_num
         self.game_info_dict[game_top_score.obj_name] = game_top_score
-        self.game_info_dict[game_info_horizon.obj_name] = game_info_horizon
-        self.game_info_dict[game_info_vertical.obj_name] = game_info_vertical
+        # self.game_info_dict[game_info_horizon.obj_name] = game_info_horizon
+        # self.game_info_dict[game_info_vertical.obj_name] = game_info_vertical
 
     def game_text_draw(self):
         for txt in self.game_info_dict.values():
@@ -465,13 +465,14 @@ class Game:
 
             self.clock.tick(self.fps)
 
+            self.all_back_block_draw()
             # 绘制游戏背景图片及logo
             self.game_bg_logo_draw()
             # 绘制游戏文本类
             self.game_text_draw()
 
             self.all_font_block_draw()
-            self.all_back_block_draw()
+
             self.play_music()
             self.game_info_dict["mouse_pos"].text = "x = {0}, y = {1}".format(*pygame.mouse.get_pos())
             if share_game_data:

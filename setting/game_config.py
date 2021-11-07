@@ -16,14 +16,14 @@ GAME_OPTION_BASE_X = GAME_WINDOWS_WIDTH // 3
 GAME_OPTION_BASE_Y = GAME_WINDOWS_HEIGHT // 2
 
 # 游戏game progress 1 背景音乐
-GAME_MUSIC_FILE_PATH_1 = "resource/music/main_theme.ogg"
+GAME_MUSIC_FILE_PATH_1 = "../resource/music/main_theme.ogg"
 
 # 放大倍数
 SCALE_MULTIPLE_3 = 3
 SCALE_MULTIPLE_5 = 5
 
 # 文本配置
-TEXT_FONT_PATH_1 = 'resource/font/Fixedsys500c.ttf'
+TEXT_FONT_PATH_1 = '../resource/font/Fixedsys500c.ttf'
 TEXT_SIZE_1 = 30
 
 # 游戏关卡图片
@@ -55,7 +55,7 @@ MARIO_INIT_REC_2 = (178, 24, 16, 20)
 MARIO_INIT_POS_1 = (600, 958)
 MAX_HORIZON_VELOCITY = 5
 MAX_VERTICAL_VELOCITY = 12
-MARIO_SMALL_JUMP_SOUND_PATH = "resource/sound/small_jump.ogg"
+MARIO_SMALL_JUMP_SOUND_PATH = "../resource/sound/small_jump.ogg"
 
 # 字体颜色
 WHITE_TEXT = (255, 255, 255)

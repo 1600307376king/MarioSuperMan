@@ -7,10 +7,10 @@ import time
 from game_roles.role_conifg import player_img_load_dic, SCALE_MULTIPLE
 from game_roles.base_element import BaseElement
 from game_roles.state_mode import StateMode
-from game_config import MAX_VERTICAL_VELOCITY, MAX_HORIZON_VELOCITY, MARIO_INIT_POS_1, SCALE_MULTIPLE_3
+from setting.game_config import MAX_VERTICAL_VELOCITY, MAX_HORIZON_VELOCITY, MARIO_INIT_POS_1, SCALE_MULTIPLE_3
 from game_roles.block_surface import BlockSurface
 from game_roles.game_music import RoleMusic
-from game_config import MARIO_SMALL_JUMP_SOUND_PATH
+from setting.game_config import MARIO_SMALL_JUMP_SOUND_PATH
 
 
 class Mario(BaseElement):
